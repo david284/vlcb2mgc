@@ -1203,10 +1203,9 @@ class cbusLibrary {
                 message.encoded = this.encodeACOF1(message.nodeNumber, message.eventNumber, message.data1);
                 break;
             case 'REQEV':   // B2
-                if(!message.hasOwnProperty('nodeNumber')) {throw Error("encode: property 'nodeNumber' missing")};
-                if(!message.hasOwnProperty('eventNumber')) {throw Error("encode: property 'eventNumber' missing")};
+                if(!message.hasOwnProperty('eventIdentifier')) {throw Error("encode: property 'eventIdentifier' missing")};
                 if(!message.hasOwnProperty('eventVariableIndex')) {throw Error("encode: property 'eventVariableIndex' missing")};
-                message.encoded = this.encodeREQEV(message.nodeNumber, message.eventNumber, message.eventVariableIndex);
+                message.encoded = this.encodeREQEV(message.eventIdentifier, message.eventVariableIndex);
                 break;
             case 'ARON1':   // B3
                 if(!message.hasOwnProperty('nodeNumber')) {throw Error("encode: property 'nodeNumber' missing")};
@@ -4136,8 +4135,6 @@ class cbusLibrary {
                 'ID_TYPE': 'S',
                 'mnemonic': 'REQEV',
                 'opCode': message.substr(7, 2),
-                'nodeNumber': parseInt(message.substr(9, 4), 16),
-                'eventNumber': parseInt(message.substr(13, 4), 16),
                 'eventIdentifier': message.substr(9, 8),
                 'eventVariableIndex': parseInt(message.substr(17, 2), 16),
                 'text': "REQEV (B2) nodeNumber " + parseInt(message.substr(9, 4), 16) +
@@ -4147,14 +4144,13 @@ class cbusLibrary {
     }
     /**
     * @desc opCode B2<br>
-    * @param {int} nodeNumber 0 to 65535
-    * @param {int} eventNumber 0 to 65535
+    * @param {string} eventIdentifer "00000000" to "FFFFFFFF"
     * @param {int} eventVariableIndex 0 to 255
     * @return {String} CBUS message encoded as a 'Grid Connect' ASCII string<br>
     * Format: [&ltMjPri&gt&ltMinPri=3&gt&ltCANID&gt]&ltB2&gt&ltnodeNumber hi&gt&ltnodeNumber lo&gt&lteventNumber hi&gt&lteventNumber lo&gt&lteventVariableIndex&gt
     */
-    encodeREQEV(nodeNumber, eventNumber, eventVariableIndex) {
-        return this.header({MinPri: 3}) + 'B2' + decToHex(nodeNumber, 4) + decToHex(eventNumber, 4) + decToHex(eventVariableIndex, 2) + ';';
+    encodeREQEV(eventIdentifier, eventVariableIndex) {
+        return this.header({MinPri: 3}) + 'B2' + eventIdentifier + decToHex(eventVariableIndex, 2) + ';';
     }
 
 
