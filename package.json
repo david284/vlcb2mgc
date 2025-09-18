@@ -1,8 +1,8 @@
 {
-  "name": "cbuslibrary",
+  "name": "vlcb2mgc",
   "version": "2.11.1",
   "description": "Library to decode & encode CBUS messages",
-  "main": "cbusLibrary.js",
+  "main": "vlcb2mgc.js",
   "directories": {
     "test": "tests"
   },
@@ -13,10 +13,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/david284/cbusLibrary.git"
+    "url": "git+https://github.com/david284/vlcb2mgc.git"
   },
   "keywords": [
-    "CBUS"
+    "CBUS",
+    "VLCB"
   ],
   "author": "David Ellis",
   "license": "MIT",
@@ -28,7 +29,7 @@
     "winston": "^3.3.3"
   },
   "bugs": {
-    "url": "https://github.com/david284/cbusLibrary/issues"
+    "url": "https://github.com/david284/vlcb2mgc/issues"
   },
-  "homepage": "https://github.com/david284/cbusLibrary#readme"
+  "homepage": "https://github.com/david284/vlcb2mgc#readme"
 }

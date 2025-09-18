@@ -2,7 +2,7 @@ const expect = require('chai').expect;
 var itParam = require('mocha-param');
 var winston = require('./config/winston_test.js');
 
-const cbusLib = require('./../cbusLibrary.js')
+const vlcb2mgc = require('./../vlcb2mgc.js')
 
 function decToHex(num, len) {return parseInt(num & (2 ** (4*len) - 1)).toString(16).toUpperCase().padStart(len, '0');}
 
@@ -25,8 +25,6 @@ function hexToString(hex) {
 }
 
 
-
-
 describe('cbusMessage tests', function(){
 
 
@@ -43,7 +41,7 @@ describe('cbusMessage tests', function(){
 	beforeEach(function() {
    		winston.info({message: ' '});   // blank line to separate tests
         // ensure expected CAN header is reset before each test run
-        cbusLib.setCanHeader(2, 123)
+        vlcb2mgc.setCanHeader(2, 123)
 	});
 
 	after(function() {
@@ -108,9 +106,9 @@ describe('cbusMessage tests', function(){
 		winston.info({message: 'cbusMessage test: BEGIN canHeader test ' + JSON.stringify(value)});
 		var identifier = parseInt(value.MjPri << 14) + parseInt(3 << 12) + parseInt(value.CAN_ID << 5) 
 		expected = ":S" + decToHex(identifier, 4) + "N10" + ";";
-        cbusLib.setCanHeader(value.MjPri, value.CAN_ID)
-        var encode = cbusLib.encodeRQNP();
-        var canHeader = cbusLib.getCanHeader();
+        vlcb2mgc.setCanHeader(value.MjPri, value.CAN_ID)
+        var encode = vlcb2mgc.encodeRQNP();
+        var canHeader = vlcb2mgc.getCanHeader();
 		winston.info({message: 'cbusMessage test: canHeader encode ' + encode});
 		winston.info({message: 'cbusMessage test: canHeader decode ' + JSON.stringify(canHeader)});
 		expect(encode).to.equal(expected, 'encode test');
@@ -278,13 +276,13 @@ describe('cbusMessage tests', function(){
     //
 	itParam("Generic encode test - ${JSON.stringify(value.test)}", GetTestCase_encode(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN Generic encode test '});
-        var encode = cbusLib.encode(value.test);
+        var encode = vlcb2mgc.encode(value.test);
 		winston.info({message: 'cbusMessage test: Generic encode ' + JSON.stringify(encode)});
 		expect(encode.mnemonic).to.equal(value.test.mnemonic, 'mnemonic');
         expect(encode.encoded).to.equal(value.expected, 'encoded');
         // now run encoded value into the decoder to see if encode/decode json matches
         // checks that decode() will accept JSON
-        var decode = cbusLib.decode(encode);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: decode result ' + JSON.stringify(decode)});
         // check all encode JSON properties exist in decode result (may be extra properties in decode we're not worried about)
         winston.info({message: 'cbusMessage test: --------------------------'});
@@ -295,7 +293,7 @@ describe('cbusMessage tests', function(){
             });
         winston.info({message: 'cbusMessage test: --------------------------'});
         // now check that if we put the decode back into the encode, we stll get the same encoding
-        var encode2 = cbusLib.encode(decode);
+        var encode2 = vlcb2mgc.encode(decode);
         expect(encode2.encoded).to.equal(value.expected, 'encoded#2');
 		winston.info({message: 'cbusMessage test: encode2 ' + JSON.stringify(encode2)});
 	})
@@ -731,7 +729,7 @@ describe('cbusMessage tests', function(){
     //
 	itParam("Generic encode fail test - ${JSON.stringify(value.test)}", GetTestCase_encodeFail(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN Generic encode failure test '});
-        expect(() => cbusLib.encode(value.test)).to.throw(Error).with.property('message', value.expected);
+        expect(() => vlcb2mgc.encode(value.test)).to.throw(Error).with.property('message', value.expected);
 	})
 
 
@@ -740,10 +738,10 @@ describe('cbusMessage tests', function(){
 	it("ACK test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN ACK test '});
 		expected = ":SAF60N00" + ";";
-        var encode = cbusLib.encodeACK();
+        var encode = vlcb2mgc.encodeACK();
 		winston.info({message: 'cbusMessage test: ACK encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
-        var decode = cbusLib.decode(encode);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ACK decode ' + JSON.stringify(decode)});
 		expect(decode.encoded).to.equal(expected, 'encoded');
 		expect(decode.ID_TYPE).to.equal('S', 'ID_TYPE');
@@ -759,8 +757,8 @@ describe('cbusMessage tests', function(){
 	it("NAK test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN ACK test '});
 		expected = ":SAF60N01" + ";";
-        var encode = cbusLib.encodeNAK();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNAK();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NAK encode ' + encode});
 		winston.info({message: 'cbusMessage test: NAK decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -778,8 +776,8 @@ describe('cbusMessage tests', function(){
 	it("HLT test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN HLT test '});
 		expected = ":S8F60N02" + ";";
-        var encode = cbusLib.encodeHLT();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeHLT();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: HLT encode ' + encode});
 		winston.info({message: 'cbusMessage test: HLT decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -797,8 +795,8 @@ describe('cbusMessage tests', function(){
 	it("BON test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN BON test '});
 		expected = ":S9F60N03" + ";";
-        var encode = cbusLib.encodeBON();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeBON();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: BON encode ' + encode});
 		winston.info({message: 'cbusMessage test: BON decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -816,8 +814,8 @@ describe('cbusMessage tests', function(){
 	it("TOF test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN TOF test '});
 		expected = ":S9F60N04" + ";";
-        var encode = cbusLib.encodeTOF();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeTOF();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: TOF encode ' + encode});
 		winston.info({message: 'cbusMessage test: TOF decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -835,8 +833,8 @@ describe('cbusMessage tests', function(){
 	it("TON test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN TON test '});
 		expected = ":S9F60N05" + ";";
-        var encode = cbusLib.encodeTON();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeTON();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: TON encode ' + encode});
 		winston.info({message: 'cbusMessage test: TON decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -854,8 +852,8 @@ describe('cbusMessage tests', function(){
 	it("ESTOP test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN ESTOP test '});
 		expected = ":S9F60N06" + ";";
-        var encode = cbusLib.encodeESTOP();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeESTOP();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ESTOP encode ' + encode});
 		winston.info({message: 'cbusMessage test: ESTOP decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -873,8 +871,8 @@ describe('cbusMessage tests', function(){
 	it("ARST test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN ARST test '});
 		expected = ":S8F60N07" + ";";
-        var encode = cbusLib.encodeARST();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeARST();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ARST encode ' + encode});
 		winston.info({message: 'cbusMessage test: ARST decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -892,8 +890,8 @@ describe('cbusMessage tests', function(){
 	it("RTOF test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN RTOF test '});
 		expected = ":S9F60N08" + ";";
-        var encode = cbusLib.encodeRTOF();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRTOF();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: RTOF encode ' + encode});
 		winston.info({message: 'cbusMessage test: RTOF decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -911,8 +909,8 @@ describe('cbusMessage tests', function(){
 	it("RTON test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN RTON test '});
 		expected = ":S9F60N09" + ";";
-        var encode = cbusLib.encodeRTON();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRTON();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: RTON encode ' + encode});
 		winston.info({message: 'cbusMessage test: RTON decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -930,8 +928,8 @@ describe('cbusMessage tests', function(){
 	it("RESTP test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN RESTP test '});
 		expected = ":S8F60N0A" + ";";
-        var encode = cbusLib.encodeRESTP();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRESTP();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: RESTP encode ' + encode});
 		winston.info({message: 'cbusMessage test: RESTP decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -949,8 +947,8 @@ describe('cbusMessage tests', function(){
 	it("RSTAT test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN RSTAT test '});
 		expected = ":SAF60N0C" + ";";
-        var encode = cbusLib.encodeRSTAT();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRSTAT();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: RSTAT encode ' + encode});
 		winston.info({message: 'cbusMessage test: RSTAT decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -968,8 +966,8 @@ describe('cbusMessage tests', function(){
 	it("QNN test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN QNN test '});
 		expected = ":SBF60N0D" + ";";
-        var encode = cbusLib.encodeQNN();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeQNN();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: QNN encode ' + encode});
 		winston.info({message: 'cbusMessage test: QNN decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -987,8 +985,8 @@ describe('cbusMessage tests', function(){
 	it("RQNP test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN RQNP test '});
 		expected = ":SBF60N10" + ";";
-        var encode = cbusLib.encodeRQNP();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRQNP();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: RQNP encode ' + encode});
 		winston.info({message: 'cbusMessage test: RQNP decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1006,8 +1004,8 @@ describe('cbusMessage tests', function(){
 	it("RQMN test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN RQMN test '});
 		expected = ":SAF60N11" + ";";
-        var encode = cbusLib.encodeRQMN();
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRQMN();
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: RQMN encode ' + encode});
 		winston.info({message: 'cbusMessage test: RQMN decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1025,8 +1023,8 @@ describe('cbusMessage tests', function(){
 	it("GSTOP test", function () {
 		winston.info({message: 'cbusMessage test: BEGIN GSTOP test '});
 		let expected = ":S9F60N12" + ";";
-    var encode = cbusLib.encodeGSTOP();
-    var decode = cbusLib.decode(encode);
+    var encode = vlcb2mgc.encodeGSTOP();
+    var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: GSTOP encode ' + encode});
 		winston.info({message: 'cbusMessage test: GSTOP decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1043,7 +1041,7 @@ describe('cbusMessage tests', function(){
 	it("Unsupported opCode test",  function () {
 		winston.info({message: 'Unsupported opCode test: BEGIN '});
 		let expected = ":SAF60N" + '1F' + '00000000000000' + ";";
-    var decode = cbusLib.decode(expected);
+    var decode = vlcb2mgc.decode(expected);
 		winston.info({message: 'Unsupported opCode test: decode ' + JSON.stringify(decode)});
 		expect(decode.encoded).to.equal(expected, 'encoded');
 		expect(decode.ID_TYPE).to.equal('S', 'ID_TYPE');
@@ -1073,8 +1071,8 @@ describe('cbusMessage tests', function(){
 	itParam("KLOC: test session ${value.session}", GetTestCase_KLOC(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN KLOC test ' + JSON.stringify(value)});
 		expected = ":SAF60N21" + decToHex(value.session, 2) + ";";
-        var encode = cbusLib.encodeKLOC(value.session);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeKLOC(value.session);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: KLOC encode ' + encode});
 		winston.info({message: 'cbusMessage test: KLOC decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1107,8 +1105,8 @@ describe('cbusMessage tests', function(){
 	itParam("QLOC test: session ${value.session}", GetTestCase_QLOC(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN QLOC test ' + JSON.stringify(value)});
 		expected = ":SAF60N22" + decToHex(value.session, 2) + ";";
-        var encode = cbusLib.encodeQLOC(value.session);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeQLOC(value.session);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: QLOC encode ' + encode});
 		winston.info({message: 'cbusMessage test: QLOC decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1142,8 +1140,8 @@ describe('cbusMessage tests', function(){
 	itParam("DKEEP test: session ${value.session}", GetTestCase_DKEEP(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN DKEEP test ' + JSON.stringify(value)});
 		expected = ":SAF60N23" + decToHex(value.session, 2) + ";";
-        var encode = cbusLib.encodeDKEEP(value.session);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeDKEEP(value.session);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: DKEEP encode ' + encode});
 		winston.info({message: 'cbusMessage test: DKEEP decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1177,8 +1175,8 @@ describe('cbusMessage tests', function(){
 	itParam("DBG1 test: status ${value.status}", GetTestCase_DBG1(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN DBG1 test ' + JSON.stringify(value)});
 		expected = ":SAF60N30" + decToHex(value.status, 2) + ";";
-        var encode = cbusLib.encodeDBG1(value.status);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeDBG1(value.status);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: DBG1 encode ' + encode});
 		winston.info({message: 'cbusMessage test: DBG1 decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1212,8 +1210,8 @@ describe('cbusMessage tests', function(){
 	itParam("EXTC test: Ext_OPC ${value.Ext_OPC}", GetTestCase_EXTC(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN EXTC test ' + JSON.stringify(value)});
 		expected = ":SBF60N3F" + decToHex(value.Ext_OPC, 2) + ";";
-        var encode = cbusLib.encodeEXTC(value.Ext_OPC);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeEXTC(value.Ext_OPC);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: EXTC encode ' + encode});
 		winston.info({message: 'cbusMessage test: EXTC decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1247,8 +1245,8 @@ describe('cbusMessage tests', function(){
 	itParam("RLOC test: address ${value.address}", GetTestCase_RLOC(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN RLOC test ' + JSON.stringify(value)});
 		expected = ":SAF60N40" + decToHex(value.address, 4) + ";";
-        var encode = cbusLib.encodeRLOC(value.address);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRLOC(value.address);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: RLOC encode ' + encode});
 		winston.info({message: 'cbusMessage test: RLOC decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1287,8 +1285,8 @@ describe('cbusMessage tests', function(){
 	itParam("QCON test: conID ${value.conID} index ${value.index}", GetTestCase_QCON(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN QCON test ' + JSON.stringify(value)});
 		expected = ":SAF60N41" + decToHex(value.conID, 2) + decToHex(value.index, 2) + ";";
-        var encode = cbusLib.encodeQCON(value.conID, value.index);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeQCON(value.conID, value.index);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: QCON encode ' + encode});
 		winston.info({message: 'cbusMessage test: QCON decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1319,8 +1317,8 @@ describe('cbusMessage tests', function(){
 	itParam("SNN test nodeNumber ${value.nodeNumber}", GetTestCase_SNN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN SNN test ' + JSON.stringify(value)});
 		expected = ":SBF60N42" + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeSNN(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeSNN(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: SNN encode ' + encode});
 		winston.info({message: 'cbusMessage test: SNN decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1358,8 +1356,8 @@ describe('cbusMessage tests', function(){
 	itParam("ALOC test: session ${value.session} allocationCode ${value.allocationCode}", GetTestCase_ALOC(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN ALOC test ' + JSON.stringify(value)});
 		expected = ":SAF60N43" + decToHex(value.session, 2) + decToHex(value.allocationCode, 2) + ";";
-        var encode = cbusLib.encodeALOC(value.session, value.allocationCode);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeALOC(value.session, value.allocationCode);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ALOC encode ' + encode});
 		winston.info({message: 'cbusMessage test: ALOC decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1398,8 +1396,8 @@ describe('cbusMessage tests', function(){
 	itParam("STMOD test: session ${value.session} modeByte ${value.modeByte}", GetTestCase_STMOD(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN STMOD test ' + JSON.stringify(value)});
 		expected = ":SAF60N44" + decToHex(value.session, 2) + decToHex(value.modeByte, 2) + ";";
-        var encode = cbusLib.encodeSTMOD(value.session, value.modeByte);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeSTMOD(value.session, value.modeByte);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: STMOD encode ' + encode});
 		winston.info({message: 'cbusMessage test: STMOD decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1438,8 +1436,8 @@ describe('cbusMessage tests', function(){
 	itParam("PCON test: session ${value.session} consistAddress ${value.consistAddress}", GetTestCase_PCON(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN PCON test ' + JSON.stringify(value)});
 		expected = ":SAF60N45" + decToHex(value.session, 2) + decToHex(value.consistAddress, 2) + ";";
-        var encode = cbusLib.encodePCON(value.session, value.consistAddress);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodePCON(value.session, value.consistAddress);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: PCON encode ' + encode});
 		winston.info({message: 'cbusMessage test: PCON decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1478,8 +1476,8 @@ describe('cbusMessage tests', function(){
 	itParam("KCON test: session ${value.session} consistAddress ${value.consistAddress}", GetTestCase_KCON(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN KCON test ' + JSON.stringify(value)});
 		expected = ":SAF60N46" + decToHex(value.session, 2) + decToHex(value.consistAddress, 2) + ";";
-        var encode = cbusLib.encodeKCON(value.session, value.consistAddress);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeKCON(value.session, value.consistAddress);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: KCON encode ' + encode});
 		winston.info({message: 'cbusMessage test: KCON decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1523,8 +1521,8 @@ describe('cbusMessage tests', function(){
 		winston.info({message: 'cbusMessage test: BEGIN DSPD test ' + JSON.stringify(value)});
         var speedDir = value.speed + parseInt((value.direction == 'Reverse') ? 0 : 128)
 		expected = ":SAF60N47" + decToHex(value.session, 2) + decToHex(speedDir, 2) + ";";
-        var encode = cbusLib.encodeDSPD(value.session, value.speed, value.direction);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeDSPD(value.session, value.speed, value.direction);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: DSPD encode ' + encode});
 		winston.info({message: 'cbusMessage test: DSPD decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1565,8 +1563,8 @@ describe('cbusMessage tests', function(){
         var mnemonic = 'DFLG'
 		winston.info({message: 'cbusMessage test: BEGIN ' + mnemonic + ' test ' + JSON.stringify(value)});
 		expected = ":SAF60N48" + decToHex(value.session, 2) + decToHex(value.flags, 2) + ";";
-        var encode = cbusLib.encodeDFLG(value.session, value.flags);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeDFLG(value.session, value.flags);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + mnemonic + ' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + mnemonic + ' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1606,8 +1604,8 @@ describe('cbusMessage tests', function(){
         var mnemonic = 'DFNON'
 		winston.info({message: 'cbusMessage test: BEGIN ' + mnemonic + ' test ' + JSON.stringify(value)});
 		expected = ":SAF60N49" + decToHex(value.session, 2) + decToHex(value.functionNumber, 2) + ";";
-        var encode = cbusLib.encodeDFNON(value.session, value.functionNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeDFNON(value.session, value.functionNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + mnemonic + ' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + mnemonic + ' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1628,8 +1626,8 @@ describe('cbusMessage tests', function(){
         var mnemonic = 'DFNOF'
 		winston.info({message: 'cbusMessage test: BEGIN ' + mnemonic + ' test ' + JSON.stringify(value)});
 		expected = ":SAF60N4A" + decToHex(value.session, 2) + decToHex(value.functionNumber, 2) + ";";
-        var encode = cbusLib.encodeDFNOF(value.session, value.functionNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeDFNOF(value.session, value.functionNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + mnemonic + ' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + mnemonic + ' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1669,8 +1667,8 @@ describe('cbusMessage tests', function(){
         var mnemonic = 'SSTAT'
 		winston.info({message: 'cbusMessage test: BEGIN ' + mnemonic + ' test ' + JSON.stringify(value)});
 		expected = ":SBF60N4C" + decToHex(value.session, 2) + decToHex(value.status, 2) + ";";
-        var encode = cbusLib.encodeSSTAT(value.session, value.status);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeSSTAT(value.session, value.status);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + mnemonic + ' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + mnemonic + ' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1701,8 +1699,8 @@ describe('cbusMessage tests', function(){
 	itParam("NNRSM test nodeNumber ${value.nodeNumber}", GetTestCase_NNRSM(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN NNRSM test ' + JSON.stringify(value)});
 		expected = ":SBF60N4F" + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeNNRSM(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNNRSM(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NNRSM encode ' + encode});
 		winston.info({message: 'cbusMessage test: NNRSM decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1732,8 +1730,8 @@ describe('cbusMessage tests', function(){
 	itParam("RQNN test nodeNumber ${value.nodeNumber}", GetTestCase_RQNN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN RQNN test ' + JSON.stringify(value)});
 		expected = ":SBF60N50" + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeRQNN(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRQNN(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: RQNN encode ' + encode});
 		winston.info({message: 'cbusMessage test: RQNN decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1763,8 +1761,8 @@ describe('cbusMessage tests', function(){
 	itParam("NNREL test nodeNumber ${value.nodeNumber}", GetTestCase_NNREL(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeNNREL(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNNREL(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1794,8 +1792,8 @@ describe('cbusMessage tests', function(){
 	itParam("NNACK test nodeNumber ${value.nodeNumber}", GetTestCase_NNACK(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN NNACK test ' + JSON.stringify(value)});
 		expected = ":SBF60N52" + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeNNACK(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNNACK(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NNACK encode ' + encode});
 		winston.info({message: 'cbusMessage test: NNACK decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1825,8 +1823,8 @@ describe('cbusMessage tests', function(){
 	itParam("NNLRN test nodeNumber ${value.nodeNumber}", GetTestCase_NNLRN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN NNLRN test ' + JSON.stringify(value)});
 		expected = ":SBF60N53" + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeNNLRN(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNNLRN(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NNLRN encode ' + encode});
 		winston.info({message: 'cbusMessage test: NNLRN decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1857,8 +1855,8 @@ describe('cbusMessage tests', function(){
 	itParam("NNULN test nodeNumber ${value.nodeNumber}", GetTestCase_NNULN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN NNULN test ' + JSON.stringify(value)});
 		expected = ":SBF60N54" + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeNNULN(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNNULN(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NNULN encode ' + encode});
 		winston.info({message: 'cbusMessage test: NNULN decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1889,8 +1887,8 @@ describe('cbusMessage tests', function(){
 	itParam("NNCLR test nodeNumber ${value.nodeNumber}", GetTestCase_NNCLR(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN NNCLR test ' + JSON.stringify(value)});
 		expected = ":SBF60N55" + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeNNCLR(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNNCLR(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NNCLR encode ' + encode});
 		winston.info({message: 'cbusMessage test: NNCLR decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1920,8 +1918,8 @@ describe('cbusMessage tests', function(){
 	itParam("NNEVN test nodeNumber ${value.nodeNumber}", GetTestCase_NNEVN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeNNEVN(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNNEVN(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1951,8 +1949,8 @@ describe('cbusMessage tests', function(){
 	itParam("NERD test nodeNumber ${value.nodeNumber}", GetTestCase_NERD(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN NERD test ' + JSON.stringify(value)});
 		expected = ":SBF60N57" + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeNERD(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNERD(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NERD encode ' + encode});
 		winston.info({message: 'cbusMessage test: NERD decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -1982,8 +1980,8 @@ describe('cbusMessage tests', function(){
 	itParam("RQEVN test nodeNumber ${value.nodeNumber}", GetTestCase_RQEVN(),  function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN RQEVN test ' + JSON.stringify(value)});
 		expected = ":SBF60N58" + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeRQEVN(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRQEVN(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: RQEVN encode ' + encode});
 		winston.info({message: 'cbusMessage test: RQEVN decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2013,8 +2011,8 @@ describe('cbusMessage tests', function(){
 	itParam("WRACK test nodeNumber ${value.nodeNumber}", GetTestCase_WRACK(),  function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN RQEVN test ' + JSON.stringify(value)});
 		expected = ":SBF60N59" + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeWRACK(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeWRACK(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: WRACK encode ' + encode});
 		winston.info({message: 'cbusMessage test: WRACK decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2044,8 +2042,8 @@ describe('cbusMessage tests', function(){
 	itParam("RQDAT test nodeNumber ${value.nodeNumber}", GetTestCase_RQDAT(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeRQDAT(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRQDAT(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2075,8 +2073,8 @@ describe('cbusMessage tests', function(){
 	itParam("RQDDS test nodeNumber ${value.nodeNumber}", GetTestCase_RQDDS(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeRQDDS(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRQDDS(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2106,8 +2104,8 @@ describe('cbusMessage tests', function(){
 	itParam("BOOTM test nodeNumber ${value.nodeNumber}", GetTestCase_BOOTM(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeBOOTM(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeBOOTM(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2137,8 +2135,8 @@ describe('cbusMessage tests', function(){
 	itParam("ENUM test nodeNumber ${value.nodeNumber}", GetTestCase_ENUM(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeENUM(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeENUM(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2168,8 +2166,8 @@ describe('cbusMessage tests', function(){
 	itParam("NNRST test nodeNumber ${value.nodeNumber}", GetTestCase_NNRST(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + ";";
-        var encode = cbusLib.encodeNNRST(value.nodeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNNRST(value.nodeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2204,8 +2202,8 @@ describe('cbusMessage tests', function(){
 	itParam("EXTC1 test Ext_OPC ${value.Ext_OPC} byte1 ${value.byte1}", GetTestCase_EXTC1(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.Ext_OPC, 2) + decToHex(value.byte1, 2) + ";";
-        var encode = cbusLib.encodeEXTC1(value.Ext_OPC, value.byte1);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeEXTC1(value.Ext_OPC, value.byte1);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2248,8 +2246,8 @@ describe('cbusMessage tests', function(){
 	itParam("DFUN test: session ${value.session} Fn1 ${value.Fn1} Fn2 ${value.Fn2}", GetTestCase_DFUN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN DFUN test ' + JSON.stringify(value)});
 		expected = ":SAF60N60" + decToHex(value.session, 2) + decToHex(value.Fn1, 2) + decToHex(value.Fn2, 2) + ";";
-        var encode = cbusLib.encodeDFUN(value.session, value.Fn1, value.Fn2);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeDFUN(value.session, value.Fn1, value.Fn2);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: DFUN encode ' + encode});
 		winston.info({message: 'cbusMessage test: DFUN decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2290,8 +2288,8 @@ describe('cbusMessage tests', function(){
 	itParam("GLOC test address ${value.address} flags ${value.flags}", GetTestCase_GLOC(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.address, 4) + decToHex(value.flags, 2) + ";";
-        var encode = cbusLib.encodeGLOC(value.address, value.flags);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeGLOC(value.address, value.flags);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2334,8 +2332,8 @@ describe('cbusMessage tests', function(){
 	itParam("ERR test: data1 ${value.data1} data2 ${value.data2} errorNumber ${value.errorNumber}", GetTestCase_ERR(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN ERR test ' + JSON.stringify(value)});
 		expected = ":SAF60N63" + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.errorNumber, 2) + ";";
-        var encode = cbusLib.encodeERR(value.data1, value.data2, value.errorNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeERR(value.data1, value.data2, value.errorNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ERR encode ' + encode});
 		winston.info({message: 'cbusMessage test: ERR decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2372,8 +2370,8 @@ describe('cbusMessage tests', function(){
 	itParam("SQU test nodeNumber ${value.nodeNumber} capacityIndex ${value.capacityIndex}", GetTestCase_SQU(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN SQU test ' + JSON.stringify(value)});
 		expected = ":S8F60N66" + decToHex(value.nodeNumber, 4) + decToHex(value.capacityIndex, 2) + ";";
-        var encode = cbusLib.encodeSQU(value.nodeNumber, value.capacityIndex);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeSQU(value.nodeNumber, value.capacityIndex);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: SQU encode ' + encode});
 		winston.info({message: 'cbusMessage test: SQU decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2409,8 +2407,8 @@ describe('cbusMessage tests', function(){
 	itParam("CMDERR test nodeNumber ${value.nodeNumber} errorNumber ${value.errorNumber}", GetTestCase_CMDERR(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN CMDERR test ' + JSON.stringify(value)});
 		expected = ":SBF60N6F" + decToHex(value.nodeNumber, 4) + decToHex(value.errorNumber, 2) + ";";
-        var encode = cbusLib.encodeCMDERR(value.nodeNumber, value.errorNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeCMDERR(value.nodeNumber, value.errorNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: CMDERR encode ' + encode});
 		winston.info({message: 'cbusMessage test: CMDERR decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2448,8 +2446,8 @@ describe('cbusMessage tests', function(){
 	itParam("EVNLF test nodeNumber ${value.nodeNumber} EVSPC ${value.EVSPC}", GetTestCase_EVNLF(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.EVSPC, 2) + ";";
-        var encode = cbusLib.encodeEVNLF(value.nodeNumber, value.EVSPC);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeEVNLF(value.nodeNumber, value.EVSPC);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2486,8 +2484,8 @@ describe('cbusMessage tests', function(){
 	itParam("NVRD test nodeNumber ${value.nodeNumber} nvIndex ${value.nvIndex}", GetTestCase_NVRD(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN NVRD test ' + JSON.stringify(value)});
 		expected = ":SBF60N71" + decToHex(value.nodeNumber, 4) + decToHex(value.nvIndex, 2) + ";";
-        var encode = cbusLib.encodeNVRD(value.nodeNumber, value.nvIndex);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNVRD(value.nodeNumber, value.nvIndex);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NVRD encode ' + encode});
 		winston.info({message: 'cbusMessage test: NVRD decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2523,8 +2521,8 @@ describe('cbusMessage tests', function(){
 	itParam("NENRD test nodeNumber ${value.nodeNumber} eventIndex ${value.eventIndex}", GetTestCase_NENRD(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN NENRD test ' + JSON.stringify(value)});
 		expected = ":SBF60N72" + decToHex(value.nodeNumber, 4) + decToHex(value.eventIndex, 2) + ";";
-        var encode = cbusLib.encodeNENRD(value.nodeNumber, value.eventIndex);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNENRD(value.nodeNumber, value.eventIndex);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NENRD encode ' + encode});
 		winston.info({message: 'cbusMessage test: NENRD decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2561,8 +2559,8 @@ describe('cbusMessage tests', function(){
 	itParam("RQNPN test nodeNumber ${value.nodeNumber} paramIndex ${value.paramIndex}", GetTestCase_RQNPN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN RQNPN test ' + JSON.stringify(value)});
 		expected = ":SBF60N73" + decToHex(value.nodeNumber, 4) + decToHex(value.paramIndex, 2) + ";";
-        var encode = cbusLib.encodeRQNPN(value.nodeNumber, value.paramIndex);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRQNPN(value.nodeNumber, value.paramIndex);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: RQNPN encode ' + encode});
 		winston.info({message: 'cbusMessage test: RQNPN decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2599,8 +2597,8 @@ describe('cbusMessage tests', function(){
 	itParam("NUMEV test nodeNumber ${value.nodeNumber} eventCount ${value.eventCount}", GetTestCase_NUMEV(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN NUMEV test ' + JSON.stringify(value)});
 		expected = ":SBF60N74" + decToHex(value.nodeNumber, 4) + decToHex(value.eventCount, 2) + ";";
-        var encode = cbusLib.encodeNUMEV(value.nodeNumber, value.eventCount);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNUMEV(value.nodeNumber, value.eventCount);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NUMEV encode ' + encode});
 		winston.info({message: 'cbusMessage test: NUMEV decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2641,8 +2639,8 @@ describe('cbusMessage tests', function(){
 	itParam("CANID test nodeNumber ${value.nodeNumber} CAN_ID ${value.CAN_ID}", GetTestCase_CANID(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.CAN_ID, 2) + ";";
-        var encode = cbusLib.encodeCANID(value.nodeNumber, value.CAN_ID);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeCANID(value.nodeNumber, value.CAN_ID);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2683,8 +2681,8 @@ describe('cbusMessage tests', function(){
 	itParam("MODE test nodeNumber ${value.nodeNumber} ModeNumber ${value.ModeNumber}", GetTestCase_MODE(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.ModeNumber, 2) + ";";
-        var encode = cbusLib.encodeMODE(value.nodeNumber, value.ModeNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeMODE(value.nodeNumber, value.ModeNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2725,8 +2723,8 @@ describe('cbusMessage tests', function(){
 	itParam("RQSD test nodeNumber ${value.nodeNumber} ServiceIndex ${value.ServiceIndex}", GetTestCase_RQSD(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.ServiceIndex, 2) + ";";
-        var encode = cbusLib.encodeRQSD(value.nodeNumber, value.ServiceIndex);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRQSD(value.nodeNumber, value.ServiceIndex);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2769,8 +2767,8 @@ describe('cbusMessage tests', function(){
 	itParam("EXTC2 test Ext_OPC ${value.Ext_OPC} byte1 ${value.byte1} byte2 ${value.byte2}", GetTestCase_EXTC2(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.Ext_OPC, 2) + decToHex(value.byte1, 2) + decToHex(value.byte2, 2) + ";";
-        var encode = cbusLib.encodeEXTC2(value.Ext_OPC, value.byte1, value.byte2);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeEXTC2(value.Ext_OPC, value.byte1, value.byte2);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2824,8 +2822,8 @@ describe('cbusMessage tests', function(){
 	itParam("RDCC3 test repetitions ${value.repetitions} byte0 ${value.byte0} byte1 ${value.byte1} byte2 ${value.byte2}", GetTestCase_RDCC3(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.repetitions, 2) + decToHex(value.byte0, 2) + decToHex(value.byte1, 2) + decToHex(value.byte2, 2) + ";";
-        var encode = cbusLib.encodeRDCC3(value.repetitions, value.byte0, value.byte1, value.byte2);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRDCC3(value.repetitions, value.byte0, value.byte1, value.byte2);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2874,8 +2872,8 @@ describe('cbusMessage tests', function(){
 	itParam("WCVO test session ${value.session} CV ${value.CV} value ${value.value}", GetTestCase_WCVO(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.session, 2) + decToHex(value.CV, 4) + decToHex(value.value, 2) + ";";
-        var encode = cbusLib.encodeWCVO(value.session, value.CV, value.value);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeWCVO(value.session, value.CV, value.value);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2923,8 +2921,8 @@ describe('cbusMessage tests', function(){
 	itParam("WCVB test session ${value.session} CV ${value.CV} value ${value.value}", GetTestCase_WCVB(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.session, 2) + decToHex(value.CV, 4) + decToHex(value.value, 2) + ";";
-        var encode = cbusLib.encodeWCVB(value.session, value.CV, value.value);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeWCVB(value.session, value.CV, value.value);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -2972,8 +2970,8 @@ describe('cbusMessage tests', function(){
 	itParam("QCVS test session ${value.session} CV ${value.CV} value ${value.mode}", GetTestCase_QCVS(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.session, 2) + decToHex(value.CV, 4) + decToHex(value.mode, 2) + ";";
-        var encode = cbusLib.encodeQCVS(value.session, value.CV, value.mode);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeQCVS(value.session, value.CV, value.mode);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3021,8 +3019,8 @@ describe('cbusMessage tests', function(){
 	itParam("PCVS test session ${value.session} CV ${value.CV} value ${value.value}", GetTestCase_PCVS(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.session, 2) + decToHex(value.CV, 4) + decToHex(value.value, 2) + ";";
-        var encode = cbusLib.encodePCVS(value.session, value.CV, value.value);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodePCVS(value.session, value.CV, value.value);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3070,8 +3068,8 @@ describe('cbusMessage tests', function(){
 	itParam("RDGN test nodeNumber ${value.nodeNumber} ServiceIndex ${value.ServiceIndex} DiagnosticCode ${value.DiagnosticCode}", GetTestCase_RDGN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.ServiceIndex, 2) + decToHex(value.DiagnosticCode, 2) + ";";
-        var encode = cbusLib.encodeRDGN(value.nodeNumber, value.ServiceIndex, value.DiagnosticCode);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRDGN(value.nodeNumber, value.ServiceIndex, value.DiagnosticCode);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3119,8 +3117,8 @@ describe('cbusMessage tests', function(){
 	itParam("NVSETRD test nodeNumber ${value.nodeNumber} nodeVariableIndex ${value.nodeVariableIndex} nodeVariableValue ${value.nodeVariableValue}", GetTestCase_NVSETRD(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.nodeVariableIndex, 2) + decToHex(value.nodeVariableValue, 2) + ";";
-        var encode = cbusLib.encodeNVSETRD(value.nodeNumber, value.nodeVariableIndex, value.nodeVariableValue);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNVSETRD(value.nodeNumber, value.nodeVariableIndex, value.nodeVariableValue);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3160,8 +3158,8 @@ describe('cbusMessage tests', function(){
 	itParam("ACON test: nodeNumber ${value.nodeNumber} eventNumber ${value.eventNumber}", GetTestCase_ACONF(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN ACON test ' + JSON.stringify(value)});
 		expected = ":SBF60N90" + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + ";";
-        var encode = cbusLib.encodeACON(value.nodeNumber, value.eventNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeACON(value.nodeNumber, value.eventNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ACON encode ' + encode});
 		winston.info({message: 'cbusMessage test: ACON decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3183,8 +3181,8 @@ describe('cbusMessage tests', function(){
 	itParam("ACOF test: nodeNumber ${value.nodeNumber} event ${value.eventNumber}", GetTestCase_ACONF(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN ACOF test ' + JSON.stringify(value)});
 		expected = ":SBF60N91" + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + ";";
-        var encode = cbusLib.encodeACOF(value.nodeNumber, value.eventNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeACOF(value.nodeNumber, value.eventNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ACOF encode ' + encode});
 		winston.info({message: 'cbusMessage test: ACOF decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3228,8 +3226,8 @@ describe('cbusMessage tests', function(){
 	itParam("AREQ test nodeNumber ${value.nodeNumber} eventNumber ${value.eventNumber}", GetTestCase_AREQ(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + ";";
-        var encode = cbusLib.encodeAREQ(value.nodeNumber, value.eventNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeAREQ(value.nodeNumber, value.eventNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3272,8 +3270,8 @@ describe('cbusMessage tests', function(){
 	itParam("ARON test nodeNumber ${value.nodeNumber} eventNumber ${value.eventNumber}", GetTestCase_ARON(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + ";";
-        var encode = cbusLib.encodeARON(value.nodeNumber, value.eventNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeARON(value.nodeNumber, value.eventNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3316,8 +3314,8 @@ describe('cbusMessage tests', function(){
 	itParam("AROF test nodeNumber ${value.nodeNumber} eventNumber ${value.eventNumber}", GetTestCase_AROF(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + ";";
-        var encode = cbusLib.encodeAROF(value.nodeNumber, value.eventNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeAROF(value.nodeNumber, value.eventNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3358,8 +3356,8 @@ describe('cbusMessage tests', function(){
 	itParam("EVULN test nodeNumber ${value.nodeNumber} eventNumber ${value.eventNumber}", GetTestCase_EVULN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN EVULN test ' + JSON.stringify(value)});
 		expected = ":SBF60N95" + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + ";";
-        var encode = cbusLib.encodeEVULN(value.nodeNumber, value.eventNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeEVULN(value.nodeNumber, value.eventNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: EVULN encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: EVULN decode ' + JSON.stringify(decode)});
@@ -3401,8 +3399,8 @@ describe('cbusMessage tests', function(){
 	itParam("NVSET test nodeNumber ${value.nodeNumber} nvIndex ${value.nvIndex} nvValue ${value.nvValue}", GetTestCase_NVSET(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN NVSET test ' + JSON.stringify(value)});
 		expected = ":SBF60N96" + decToHex(value.nodeNumber, 4) + decToHex(value.nvIndex, 2) + decToHex(value.nvValue, 2) + ";";
-        var encode = cbusLib.encodeNVSET(value.nodeNumber, value.nvIndex, value.nvValue);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNVSET(value.nodeNumber, value.nvIndex, value.nvValue);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NVSET encode ' + encode});
 		winston.info({message: 'cbusMessage test: NVSET decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3444,8 +3442,8 @@ describe('cbusMessage tests', function(){
 	itParam("NVANS test nodeNumber ${value.nodeNumber} nvIndex ${value.nvIndex} nvValue ${value.nvValue}", GetTestCase_NVANS(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN NVANS test ' + JSON.stringify(value)});
 		expected = ":SBF60N97" + decToHex(value.nodeNumber, 4) + decToHex(value.nvIndex, 2) + decToHex(value.nvValue, 2) + ";";
-        var encode = cbusLib.encodeNVANS(value.nodeNumber, value.nvIndex, value.nvValue);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeNVANS(value.nodeNumber, value.nvIndex, value.nvValue);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: NVANS encode ' + encode});
 		winston.info({message: 'cbusMessage test: NVANS decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3486,8 +3484,8 @@ describe('cbusMessage tests', function(){
 	itParam("ASON test nodeNumber ${value.nodeNumber} eventNumber ${value.deviceNumber}", GetTestCase_ASONF(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN ASON test ' + JSON.stringify(value)});
 		expected = ":SBF60N98" + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + ";";
-        var encode = cbusLib.encodeASON(value.nodeNumber, value.deviceNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeASON(value.nodeNumber, value.deviceNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ASON encode ' + encode});
 		winston.info({message: 'cbusMessage test: ASON decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3509,8 +3507,8 @@ describe('cbusMessage tests', function(){
 	itParam("ASOF test nodeNumber ${value.nodeNumber} eventNumber ${value.deviceNumber}", GetTestCase_ASONF(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN ASOF test ' + JSON.stringify(value)});
 		expected = ":SBF60N99" + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + ";";
-        var encode = cbusLib.encodeASOF(value.nodeNumber, value.deviceNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeASOF(value.nodeNumber, value.deviceNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ASOF encode ' + encode});
 		winston.info({message: 'cbusMessage test: ASOF decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3554,8 +3552,8 @@ describe('cbusMessage tests', function(){
 	itParam("ASRQ test nodeNumber ${value.nodeNumber} deviceNumber ${value.deviceNumber}", GetTestCase_ASRQ(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + ";";
-        var encode = cbusLib.encodeASRQ(value.nodeNumber, value.deviceNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeASRQ(value.nodeNumber, value.deviceNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3597,8 +3595,8 @@ describe('cbusMessage tests', function(){
 	itParam("PARAN test nodeNumber ${value.nodeNumber} parameterIndex ${value.parameterIndex} parameterValue ${value.parameterValue}", GetTestCase_PARAN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN PARAN test ' + JSON.stringify(value)});
 		expected = ":SBF60N9B" + decToHex(value.nodeNumber, 4) + decToHex(value.parameterIndex, 2) + decToHex(value.parameterValue, 2) + ";";
-        var encode = cbusLib.encodePARAN(value.nodeNumber, value.parameterIndex, value.parameterValue);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodePARAN(value.nodeNumber, value.parameterIndex, value.parameterValue);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: PARAN encode ' + encode});
 		winston.info({message: 'cbusMessage test: PARAN decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3640,8 +3638,8 @@ describe('cbusMessage tests', function(){
 	itParam("REVAL test nodeNumber ${value.nodeNumber} eventIndex ${value.eventIndex} eventVariableIndex ${value.eventVariableIndex}", GetTestCase_REVAL(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN REVAL test ' + JSON.stringify(value)});
 		expected = ":SBF60N9C" + decToHex(value.nodeNumber, 4) + decToHex(value.eventIndex, 2) + decToHex(value.eventVariableIndex, 2) + ";";
-        var encode = cbusLib.encodeREVAL(value.nodeNumber, value.eventIndex, value.eventVariableIndex);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeREVAL(value.nodeNumber, value.eventIndex, value.eventVariableIndex);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: REVAL encode ' + encode});
 		winston.info({message: 'cbusMessage test: REVAL decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3684,8 +3682,8 @@ describe('cbusMessage tests', function(){
 	itParam("ARSON test nodeNumber ${value.nodeNumber} deviceNumber ${value.deviceNumber}", GetTestCase_ARSON(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + ";";
-        var encode = cbusLib.encodeARSON(value.nodeNumber, value.deviceNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeARSON(value.nodeNumber, value.deviceNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3728,8 +3726,8 @@ describe('cbusMessage tests', function(){
 	itParam("ARSOF test nodeNumber ${value.nodeNumber} deviceNumber ${value.deviceNumber}", GetTestCase_ARSOF(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + ";";
-        var encode = cbusLib.encodeARSOF(value.nodeNumber, value.deviceNumber);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeARSOF(value.nodeNumber, value.deviceNumber);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3784,8 +3782,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_EXTC3(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.Ext_OPC, 2) + decToHex(value.byte1, 2) + decToHex(value.byte2, 2) + decToHex(value.byte3, 2) + ";";
-        var encode = cbusLib.encodeEXTC3(value.Ext_OPC, value.byte1, value.byte2, value.byte3);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeEXTC3(value.Ext_OPC, value.byte1, value.byte2, value.byte3);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3847,8 +3845,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_RDCC4(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.repetitions, 2) + decToHex(value.byte0, 2) + decToHex(value.byte1, 2) + decToHex(value.byte2, 2) + decToHex(value.byte3, 2) + ";";
-        var encode = cbusLib.encodeRDCC4(value.repetitions, value.byte0, value.byte1, value.byte2, value.byte3);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRDCC4(value.repetitions, value.byte0, value.byte1, value.byte2, value.byte3);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3905,8 +3903,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_WCVS(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.session, 2) + decToHex(value.CV, 4) + decToHex(value.mode, 2) + decToHex(value.value, 2) + ";";
-        var encode = cbusLib.encodeWCVS(value.session, value.CV, value.mode, value.value);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeWCVS(value.session, value.CV, value.mode, value.value);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -3963,8 +3961,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_HEARTB(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.SequenceCount, 2) + decToHex(value.StatusByte1, 2) + decToHex(value.StatusByte2, 2) + ";";
-        var encode = cbusLib.encodeHEARTB(value.nodeNumber, value.SequenceCount, value.StatusByte1, value.StatusByte2);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeHEARTB(value.nodeNumber, value.SequenceCount, value.StatusByte1, value.StatusByte2);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -4019,8 +4017,8 @@ describe('cbusMessage tests', function(){
 	itParam("SD test nodeNumber ${value.nodeNumber} ServiceIndex ${value.ServiceIndex} ServiceType ${value.ServiceType} ServiceVersion ${value.ServiceVersion}", GetTestCase_SD(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.ServiceIndex, 2) + decToHex(value.ServiceType, 2) + decToHex(value.ServiceVersion, 2) + ";";
-        var encode = cbusLib.encodeSD(value.nodeNumber, value.ServiceIndex, value.ServiceType, value.ServiceVersion);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeSD(value.nodeNumber, value.ServiceIndex, value.ServiceType, value.ServiceVersion);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -4077,8 +4075,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_GRSP(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + value.requestOpCode + decToHex(value.serviceType, 2) + decToHex(value.result, 2) + ";";
-        var encode = cbusLib.encodeGRSP(value.nodeNumber, value.requestOpCode, value.serviceType, value.result);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeGRSP(value.nodeNumber, value.requestOpCode, value.serviceType, value.result);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -4127,8 +4125,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ACONF2(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ACON1 test ' + JSON.stringify(value)});
             expected = ":SBF60NB0" + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + ";";
-            var encode = cbusLib.encodeACON1(value.nodeNumber, value.eventNumber, value.data1);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeACON1(value.nodeNumber, value.eventNumber, value.data1);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ACON1 encode ' + encode});
             winston.info({message: 'cbusMessage test: ACON1 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -4151,8 +4149,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ACONF1(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ACOF2 test ' + JSON.stringify(value)});
             expected = ":SBF60NB1" + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + ";";
-            var encode = cbusLib.encodeACOF1(value.nodeNumber, value.eventNumber, value.data1);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeACOF1(value.nodeNumber, value.eventNumber, value.data1);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ACOF1 encode ' + encode});
             winston.info({message: 'cbusMessage test: ACOF1 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -4203,10 +4201,10 @@ describe('cbusMessage tests', function(){
         GetTestCase_REQEV(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.eventVariableIndex, 2) + ";";
-            var encode = cbusLib.encodeREQEV(value.nodeNumber, value.eventNumber, value.eventVariableIndex);
+            var encode = vlcb2mgc.encodeREQEV(value.nodeNumber, value.eventNumber, value.eventVariableIndex);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             expect(encode).to.equal(expected, 'encode');
-            var decode = cbusLib.decode(encode);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
             expect(decode.encoded).to.equal(expected, 'encoded');
             expect(decode.ID_TYPE).to.equal('S', 'ID_TYPE');
@@ -4255,8 +4253,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ARON1(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + ";";
-            var encode = cbusLib.encodeARON1(value.nodeNumber, value.eventNumber, value.data1);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeARON1(value.nodeNumber, value.eventNumber, value.data1);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -4307,8 +4305,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_AROF1(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + ";";
-            var encode = cbusLib.encodeAROF1(value.nodeNumber, value.eventNumber, value.data1);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeAROF1(value.nodeNumber, value.eventNumber, value.data1);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -4357,8 +4355,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_NEVAL(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN NEVAL test ' + JSON.stringify(value)});
             expected = ":SBF60NB5" + decToHex(value.nodeNumber, 4) + decToHex(value.eventIndex, 2) + decToHex(value.eventVariableIndex, 2) + decToHex(value.eventVariableValue, 2) + ";";
-            var encode = cbusLib.encodeNEVAL(value.nodeNumber, value.eventIndex, value.eventVariableIndex, value.eventVariableValue);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeNEVAL(value.nodeNumber, value.eventIndex, value.eventVariableIndex, value.eventVariableValue);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: NEVAL encode ' + encode});
             winston.info({message: 'cbusMessage test: NEVAL decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -4407,8 +4405,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_PNN(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN NEVAL test ' + JSON.stringify(value)});
             expected = ":SBF60NB6" + decToHex(value.nodeNumber, 4) + decToHex(value.manufacturerId, 2) + decToHex(value.moduleId, 2) + decToHex(value.flags, 2) + ";";
-            var encode = cbusLib.encodePNN(value.nodeNumber, value.manufacturerId, value.moduleId, value.flags);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodePNN(value.nodeNumber, value.manufacturerId, value.moduleId, value.flags);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: PNN encode ' + encode});
             winston.info({message: 'cbusMessage test: PNN decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -4457,8 +4455,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ASONF1(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ASON1 test ' + JSON.stringify(value)});
             expected = ":SBF60NB8" + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + ";";
-            var encode = cbusLib.encodeASON1(value.nodeNumber, value.deviceNumber, value.data1);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeASON1(value.nodeNumber, value.deviceNumber, value.data1);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ASON1 encode ' + encode});
             winston.info({message: 'cbusMessage test: ASON1 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -4481,8 +4479,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ASONF1(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ASOF2 test ' + JSON.stringify(value)});
             expected = ":SBF60NB9" + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + ";";
-            var encode = cbusLib.encodeASOF1(value.nodeNumber, value.deviceNumber, value.data1);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeASOF1(value.nodeNumber, value.deviceNumber, value.data1);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ASOF1 encode ' + encode});
             winston.info({message: 'cbusMessage test: ASOF1 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -4533,8 +4531,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ARSON1(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + ";";
-            var encode = cbusLib.encodeARSON1(value.nodeNumber, value.deviceNumber, value.data1);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeARSON1(value.nodeNumber, value.deviceNumber, value.data1);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -4585,8 +4583,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ARSOF1(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + ";";
-            var encode = cbusLib.encodeARSOF1(value.nodeNumber, value.deviceNumber, value.data1);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeARSOF1(value.nodeNumber, value.deviceNumber, value.data1);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -4648,8 +4646,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_EXTC4(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.Ext_OPC, 2) + decToHex(value.byte1, 2) + decToHex(value.byte2, 2) + decToHex(value.byte3, 2) + decToHex(value.byte4, 2) + ";";
-        var encode = cbusLib.encodeEXTC4(value.Ext_OPC, value.byte1, value.byte2, value.byte3, value.byte4);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeEXTC4(value.Ext_OPC, value.byte1, value.byte2, value.byte3, value.byte4);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -4718,8 +4716,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_RDCC5(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.repetitions, 2) + decToHex(value.byte0, 2) + decToHex(value.byte1, 2) + decToHex(value.byte2, 2) + decToHex(value.byte3, 2) + decToHex(value.byte4, 2) + ";";
-        var encode = cbusLib.encodeRDCC5(value.repetitions, value.byte0, value.byte1, value.byte2, value.byte3, value.byte4);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRDCC5(value.repetitions, value.byte0, value.byte1, value.byte2, value.byte3, value.byte4);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -4776,8 +4774,8 @@ describe('cbusMessage tests', function(){
 	itParam("WCVOA test address ${value.address} CV ${value.CV} mode ${value.mode} value ${value.value}", GetTestCase_WCVOA(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.address, 4) + decToHex(value.CV, 4) + decToHex(value.mode, 2) + decToHex(value.value, 2) + ";";
-        var encode = cbusLib.encodeWCVOA(value.address, value.CV, value.mode, value.value);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeWCVOA(value.address, value.CV, value.mode, value.value);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -4838,8 +4836,8 @@ describe('cbusMessage tests', function(){
 	itParam("CABDAT test address ${value.address} datcode ${value.datcode} aspect1 ${value.aspect1} aspect2 ${value.aspect2} speed ${value.speed}", GetTestCase_CABDAT(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.address, 4) + decToHex(value.datcode, 2) + decToHex(value.aspect1, 2) + decToHex(value.aspect2, 2) + decToHex(value.speed, 2) + ";";
-        var encode = cbusLib.encodeCABDAT(value.address, value.datcode, value.aspect1, value.aspect2, value.speed);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeCABDAT(value.address, value.datcode, value.aspect1, value.aspect2, value.speed);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -4897,8 +4895,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_DGN(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.ServiceIndex, 2) + decToHex(value.DiagnosticCode, 2) + decToHex(value.DiagnosticValue, 4) + ";";
-            var encode = cbusLib.encodeDGN(value.nodeNumber, value.ServiceIndex, value.DiagnosticCode, value.DiagnosticValue);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeDGN(value.nodeNumber, value.ServiceIndex, value.DiagnosticCode, value.DiagnosticValue);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -4973,8 +4971,8 @@ describe('cbusMessage tests', function(){
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
         var wdmon = value.dayOfWeek + (16 * value.month);
 		expected = ":SBF60N" + value.opCode + decToHex(value.minutes, 2) + decToHex(value.hours, 2) + decToHex(wdmon, 2) + decToHex(value.div, 2) + decToHex(value.dayOfMonth, 2) + decToHex((value.temperature & 0xFF), 2) + ";";
-        var encode = cbusLib.encodeFCLK(value.minutes, value.hours, value.dayOfWeek, value.dayOfMonth, value.month, value.div, value.temperature);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeFCLK(value.minutes, value.hours, value.dayOfWeek, value.dayOfMonth, value.month, value.div, value.temperature);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -5032,8 +5030,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ACONF2(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ACON2 test ' + JSON.stringify(value)});
             expected = ":SBF60ND0" + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + ";";
-            var encode = cbusLib.encodeACON2(value.nodeNumber, value.eventNumber, value.data1, value.data2);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeACON2(value.nodeNumber, value.eventNumber, value.data1, value.data2);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ACON3 encode ' + encode});
             winston.info({message: 'cbusMessage test: ACON3 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -5057,8 +5055,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ACONF2(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ACOF2 test ' + JSON.stringify(value)});
             expected = ":SBF60ND1" + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + ";";
-            var encode = cbusLib.encodeACOF2(value.nodeNumber, value.eventNumber, value.data1, value.data2);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeACOF2(value.nodeNumber, value.eventNumber, value.data1, value.data2);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ACOF2 encode ' + encode});
             winston.info({message: 'cbusMessage test: ACOF2 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -5115,8 +5113,8 @@ describe('cbusMessage tests', function(){
 	itParam("EVLRN test nodeNumber ${value.nodeNumber} eventNumber ${value.eventNumber} eventVariableIndex ${value.eventVariableIndex} eventVariableValue ${value.eventVariableValue}", GetTestCase_EVLRN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN EVLRN test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.eventVariableIndex, 2) + decToHex(value.eventVariableValue, 2) + ";";
-        var encode = cbusLib.encodeEVLRN(value.nodeNumber, value.eventNumber, value.eventVariableIndex, value.eventVariableValue);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeEVLRN(value.nodeNumber, value.eventNumber, value.eventVariableIndex, value.eventVariableValue);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: EVLRN encode ' + encode});
         expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: EVLRN decode ' + JSON.stringify(decode)});
@@ -5174,8 +5172,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_EVANS(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.eventVariableIndex, 2) + decToHex(value.eventVariableValue, 2) + ";";
-            var encode = cbusLib.encodeEVANS(value.nodeNumber, value.eventNumber, value.eventVariableIndex, value.eventVariableValue);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeEVANS(value.nodeNumber, value.eventNumber, value.eventVariableIndex, value.eventVariableValue);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             expect(encode).to.equal(expected, 'encode');
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -5233,8 +5231,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ARON2(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + ";";
-            var encode = cbusLib.encodeARON2(value.nodeNumber, value.eventNumber, value.data1, value.data2);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeARON2(value.nodeNumber, value.eventNumber, value.data1, value.data2);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -5292,8 +5290,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_AROF2(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + ";";
-            var encode = cbusLib.encodeAROF2(value.nodeNumber, value.eventNumber, value.data1, value.data2);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeAROF2(value.nodeNumber, value.eventNumber, value.data1, value.data2);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -5349,8 +5347,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ASONF2(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ASON2 test ' + JSON.stringify(value)});
             expected = ":SBF60ND8" + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + ";";
-            var encode = cbusLib.encodeASON2(value.nodeNumber, value.deviceNumber, value.data1, value.data2);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeASON2(value.nodeNumber, value.deviceNumber, value.data1, value.data2);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ASON2 encode ' + encode});
             winston.info({message: 'cbusMessage test: ASON2 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -5374,8 +5372,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ASONF2(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ASOF2 test ' + JSON.stringify(value)});
             expected = ":SBF60ND9" + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + ";";
-            var encode = cbusLib.encodeASOF2(value.nodeNumber, value.deviceNumber, value.data1, value.data2);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeASOF2(value.nodeNumber, value.deviceNumber, value.data1, value.data2);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ASOF2 encode ' + encode});
             winston.info({message: 'cbusMessage test: ASOF2 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -5433,8 +5431,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ARSON2(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + ";";
-            var encode = cbusLib.encodeARSON2(value.nodeNumber, value.deviceNumber, value.data1, value.data2);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeARSON2(value.nodeNumber, value.deviceNumber, value.data1, value.data2);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -5492,8 +5490,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ARSOF2(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + ";";
-            var encode = cbusLib.encodeARSOF2(value.nodeNumber, value.deviceNumber, value.data1, value.data2);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeARSOF2(value.nodeNumber, value.deviceNumber, value.data1, value.data2);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -5562,8 +5560,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_EXTC5(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.Ext_OPC, 2) + decToHex(value.byte1, 2) + decToHex(value.byte2, 2) + decToHex(value.byte3, 2) + decToHex(value.byte4, 2) + decToHex(value.byte5, 2) + ";";
-        var encode = cbusLib.encodeEXTC5(value.Ext_OPC, value.byte1, value.byte2, value.byte3, value.byte4, value.byte5);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeEXTC5(value.Ext_OPC, value.byte1, value.byte2, value.byte3, value.byte4, value.byte5);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -5639,8 +5637,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_RDCC6(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.repetitions, 2) + decToHex(value.byte0, 2) + decToHex(value.byte1, 2) + decToHex(value.byte2, 2) + decToHex(value.byte3, 2) + decToHex(value.byte4, 2) + decToHex(value.byte5, 2) + ";";
-        var encode = cbusLib.encodeRDCC6(value.repetitions, value.byte0, value.byte1, value.byte2, value.byte3, value.byte4, value.byte5);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeRDCC6(value.repetitions, value.byte0, value.byte1, value.byte2, value.byte3, value.byte4, value.byte5);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -5718,10 +5716,10 @@ describe('cbusMessage tests', function(){
             var speedDir = value.speed + parseInt((value.direction == 'Reverse') ? 0 : 128)
             expected = ":SAF60NE1" + decToHex(value.session, 2) + decToHex(value.address, 4) + decToHex(speedDir, 2) +
                 decToHex(value.Fn1, 2) + decToHex(value.Fn2, 2) + decToHex(value.Fn3, 2) + ";";
-            var encode = cbusLib.encodePLOC(value.session, value.address, value.speed, value.direction, value.Fn1, value.Fn2, value.Fn3);
+            var encode = vlcb2mgc.encodePLOC(value.session, value.address, value.speed, value.direction, value.Fn1, value.Fn2, value.Fn3);
             winston.info({message: 'cbusMessage test: PLOC encode ' + encode});
             expect(encode).to.equal(expected, 'encode');
-            var decode = cbusLib.decode(encode);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: PLOC decode ' + JSON.stringify(decode)});
             expect(decode.encoded).to.equal(expected, 'encoded');
             expect(decode.ID_TYPE).to.equal('S', 'ID_TYPE');
@@ -5760,10 +5758,10 @@ describe('cbusMessage tests', function(){
 	itParam("NAME test name ${value.name}", GetTestCase_NAME(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + stringToHex(value.expectedName) + ";";
-        var encode = cbusLib.encodeNAME(value.name);
+        var encode = vlcb2mgc.encodeNAME(value.name);
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
-        var decode = cbusLib.decode(encode);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(decode.encoded).to.equal(expected, 'encoded');
 		expect(decode.ID_TYPE).to.equal('S', 'ID_TYPE');
@@ -5826,8 +5824,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_STAT(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.CS, 2) + decToHex(value.flags, 2) + decToHex(value.major, 2) + decToHex(value.minor, 2) + decToHex(value.build, 2) + ";";
-        var encode = cbusLib.encodeSTAT(value.nodeNumber, value.CS, value.flags, value.major, value.minor, value.build);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeSTAT(value.nodeNumber, value.CS, value.flags, value.major, value.minor, value.build);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -5881,8 +5879,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_ENACK(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.nodeNumber, 4) + value.ackOpCode + value.eventIdentifier + ";";
-    var encode = cbusLib.encodeENACK(value.nodeNumber, value.ackOpCode, value.eventIdentifier);
-    var decode = cbusLib.decode(encode);
+    var encode = vlcb2mgc.encodeENACK(value.nodeNumber, value.ackOpCode, value.eventIdentifier);
+    var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -5948,8 +5946,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_ESD(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SAF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.ServiceIndex, 2) + decToHex(value.ServiceType, 2) + decToHex(value.Data1, 2) + decToHex(value.Data2, 2) + decToHex(value.Data3, 2) + ";";
-        var encode = cbusLib.encodeESD(value.nodeNumber, value.ServiceIndex, value.ServiceType, value.Data1, value.Data2, value.Data3);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeESD(value.nodeNumber, value.ServiceIndex, value.ServiceType, value.Data1, value.Data2, value.Data3);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -6009,8 +6007,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_DTXC_0(), function (value) {
     winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
     expected = ":SBF60N" + value.opCode + decToHex(value.streamIdentifier, 2) + decToHex(value.sequenceNumber, 2) + decToHex(value.messageLength, 4) + decToHex(value.CRC16, 4) + decToHex(value.flags, 2) + ";";
-    var encode = cbusLib.encodeDTXC_SEQ0(value.streamIdentifier, value.sequenceNumber, value.messageLength, value.CRC16, value.flags)
-    var decode = cbusLib.decode(expected);
+    var encode = vlcb2mgc.encodeDTXC_SEQ0(value.streamIdentifier, value.sequenceNumber, value.messageLength, value.CRC16, value.flags)
+    var decode = vlcb2mgc.decode(expected);
     winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
     expect(encode).to.equal(expected, 'encode');
     winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -6084,8 +6082,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_DTXC_1(), function (value) {
     winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
     expected = ":SBF60N" + value.opCode + decToHex(value.streamIdentifier, 2) + decToHex(value.sequenceNumber, 2) + decToHex(value.Data1, 2) + decToHex(value.Data2, 2) + decToHex(value.Data3, 2) + decToHex(value.Data4, 2) + decToHex(value.Data5, 2) + ";";
-    var encode = cbusLib.encodeDTXC(value.streamIdentifier, value.sequenceNumber, value.Data1, value.Data2, value.Data3, value.Data4, value.Data5)
-    var decode = cbusLib.decode(expected);
+    var encode = vlcb2mgc.encodeDTXC(value.streamIdentifier, value.sequenceNumber, value.Data1, value.Data2, value.Data3, value.Data4, value.Data5)
+    var decode = vlcb2mgc.decode(expected);
     winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
     expect(encode).to.equal(expected, 'encode');
     winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -6162,8 +6160,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_PARAMS(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.param1, 2) + decToHex(value.param2, 2) + decToHex(value.param3, 2) + decToHex(value.param4, 2) + decToHex(value.param5, 2) + decToHex(value.param6, 2) + decToHex(value.param7, 2) + ";";
-        var encode = cbusLib.encodePARAMS(value.param1, value.param2, value.param3, value.param4, value.param5, value.param6, value.param7);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodePARAMS(value.param1, value.param2, value.param3, value.param4, value.param5, value.param6, value.param7);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -6227,8 +6225,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ACONF3(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ACON3 test ' + JSON.stringify(value)});
             expected = ":SBF60NF0" + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + ";";
-            var encode = cbusLib.encodeACON3(value.nodeNumber, value.eventNumber, value.data1, value.data2, value.data3);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeACON3(value.nodeNumber, value.eventNumber, value.data1, value.data2, value.data3);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ACON3 encode ' + encode});
             winston.info({message: 'cbusMessage test: ACON3 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -6253,8 +6251,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ACONF3(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ACOF3 test ' + JSON.stringify(value)});
             expected = ":SBF60NF1" + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + ";";
-            var encode = cbusLib.encodeACOF3(value.nodeNumber, value.eventNumber, value.data1, value.data2, value.data3);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeACOF3(value.nodeNumber, value.eventNumber, value.data1, value.data2, value.data3);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ACOF3 encode ' + encode});
             winston.info({message: 'cbusMessage test: ACOF3 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -6300,8 +6298,8 @@ describe('cbusMessage tests', function(){
 		winston.info({message: 'cbusMessage test: BEGIN ENRSP test ' + JSON.stringify(value)});
         // ENRSP Format: [<MjPri><MinPri=3><CANID>]<F2><NN hi><NN lo><EN3><EN2><EN1><EN0><EN#>
 		expected = ":SBF60NF2" + decToHex(value.nodeNumber, 4) + value.eventIdentifier + decToHex(value.eventIndex, 2) + ";";
-        var encode = cbusLib.encodeENRSP(value.nodeNumber, value.eventIdentifier, value.eventIndex);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeENRSP(value.nodeNumber, value.eventIdentifier, value.eventIndex);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ENRSP encode ' + encode});
 		winston.info({message: 'cbusMessage test: ENRSP decode ' + JSON.stringify(decode)});
         expect(encode).to.equal(expected, 'encode');
@@ -6364,8 +6362,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ARON3(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + ";";
-        var encode = cbusLib.encodeARON3(value.nodeNumber, value.eventNumber, value.data1, value.data2, value.data3);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeARON3(value.nodeNumber, value.eventNumber, value.data1, value.data2, value.data3);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -6431,8 +6429,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_AROF3(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + ";";
-            var encode = cbusLib.encodeAROF3(value.nodeNumber, value.eventNumber, value.data1, value.data2, value.data3);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeAROF3(value.nodeNumber, value.eventNumber, value.data1, value.data2, value.data3);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             expect(encode).to.equal(expected, 'encode');
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -6496,10 +6494,10 @@ describe('cbusMessage tests', function(){
         GetTestCase_EVLRNI(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
             expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.eventNumberIndex, 2) + decToHex(value.eventVariableIndex, 2) + decToHex(value.eventVariableValue, 2) + ";";
-            var encode = cbusLib.encodeEVLRNI(value.nodeNumber, value.eventNumber, value.eventNumberIndex, value.eventVariableIndex, value.eventVariableValue);
+            var encode = vlcb2mgc.encodeEVLRNI(value.nodeNumber, value.eventNumber, value.eventNumberIndex, value.eventVariableIndex, value.eventVariableValue);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
             expect(encode).to.equal(expected, 'encode');
-            var decode = cbusLib.decode(encode);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
             expect(decode.encoded).to.equal(expected, 'encoded');
             expect(decode.ID_TYPE).to.equal('S', 'ID_TYPE');
@@ -6567,8 +6565,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_ACDAT(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + decToHex(value.data4, 2) + decToHex(value.data5, 2) + ";";
-        var encode = cbusLib.encodeACDAT(value.nodeNumber, value.data1, value.data2, value.data3, value.data4, value.data5);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeACDAT(value.nodeNumber, value.data1, value.data2, value.data3, value.data4, value.data5);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -6638,8 +6636,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_ARDAT(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + decToHex(value.data4, 2) + decToHex(value.data5, 2) + ";";
-        var encode = cbusLib.encodeARDAT(value.nodeNumber, value.data1, value.data2, value.data3, value.data4, value.data5);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeARDAT(value.nodeNumber, value.data1, value.data2, value.data3, value.data4, value.data5);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -6702,8 +6700,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ASONF3(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ASON3 test ' + JSON.stringify(value)});
             expected = ":SBF60NF8" + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + ";";
-            var encode = cbusLib.encodeASON3(value.nodeNumber, value.deviceNumber, value.data1, value.data2, value.data3);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeASON3(value.nodeNumber, value.deviceNumber, value.data1, value.data2, value.data3);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ASON3 encode ' + encode});
             winston.info({message: 'cbusMessage test: ASON3 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -6728,8 +6726,8 @@ describe('cbusMessage tests', function(){
         GetTestCase_ASONF3(), function (value) {
             winston.info({message: 'cbusMessage test: BEGIN ASOF3 test ' + JSON.stringify(value)});
             expected = ":SBF60NF9" + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + ";";
-            var encode = cbusLib.encodeASOF3(value.nodeNumber, value.deviceNumber, value.data1, value.data2, value.data3);
-            var decode = cbusLib.decode(encode);
+            var encode = vlcb2mgc.encodeASOF3(value.nodeNumber, value.deviceNumber, value.data1, value.data2, value.data3);
+            var decode = vlcb2mgc.decode(encode);
             winston.info({message: 'cbusMessage test: ASOF3 encode ' + encode});
             winston.info({message: 'cbusMessage test: ASOF3 decode ' + JSON.stringify(decode)});
             expect(encode).to.equal(expected, 'encode');
@@ -6799,8 +6797,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_DDES(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + decToHex(value.data4, 2) + decToHex(value.data5, 2) + ";";
-        var encode = cbusLib.encodeDDES(value.deviceNumber, value.data1, value.data2, value.data3, value.data4, value.data5);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeDDES(value.deviceNumber, value.data1, value.data2, value.data3, value.data4, value.data5);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -6870,8 +6868,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_DDRS(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + decToHex(value.data4, 2) + decToHex(value.data5, 2) + ";";
-        var encode = cbusLib.encodeDDRS(value.deviceNumber, value.data1, value.data2, value.data3, value.data4, value.data5);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeDDRS(value.deviceNumber, value.data1, value.data2, value.data3, value.data4, value.data5);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -6941,8 +6939,8 @@ describe('cbusMessage tests', function(){
       GetTestCase_DDWS(), function (value) {
       winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
       expected = ":SBF60N" + value.opCode + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + decToHex(value.data4, 2) + decToHex(value.data5, 2) + ";";
-      var encode = cbusLib.encodeDDWS(value.deviceNumber, value.data1, value.data2, value.data3, value.data4, value.data5);
-      var decode = cbusLib.decode(encode);
+      var encode = vlcb2mgc.encodeDDWS(value.deviceNumber, value.data1, value.data2, value.data3, value.data4, value.data5);
+      var decode = vlcb2mgc.decode(encode);
       winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
       expect(encode).to.equal(expected, 'encode');
       winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -7007,8 +7005,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_ARSON3(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + ";";
-        var encode = cbusLib.encodeARSON3(value.nodeNumber, value.deviceNumber, value.data1, value.data2, value.data3);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeARSON3(value.nodeNumber, value.deviceNumber, value.data1, value.data2, value.data3);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -7073,8 +7071,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_ARSOF3(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.deviceNumber, 4) + decToHex(value.data1, 2) + decToHex(value.data2, 2) + decToHex(value.data3, 2) + ";";
-        var encode = cbusLib.encodeARSOF3(value.nodeNumber, value.deviceNumber, value.data1, value.data2, value.data3);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeARSOF3(value.nodeNumber, value.deviceNumber, value.data1, value.data2, value.data3);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
@@ -7151,8 +7149,8 @@ describe('cbusMessage tests', function(){
     GetTestCase_EXTC6(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + decToHex(value.Ext_OPC, 2) + decToHex(value.byte1, 2) + decToHex(value.byte2, 2) + decToHex(value.byte3, 2) + decToHex(value.byte4, 2) + decToHex(value.byte5, 2) + decToHex(value.byte6, 2) + ";";
-        var encode = cbusLib.encodeEXTC6(value.Ext_OPC, value.byte1, value.byte2, value.byte3, value.byte4, value.byte5, value.byte6);
-        var decode = cbusLib.decode(encode);
+        var encode = vlcb2mgc.encodeEXTC6(value.Ext_OPC, value.byte1, value.byte2, value.byte3, value.byte4, value.byte5, value.byte6);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
 		winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
 		expect(encode).to.equal(expected, 'encode');
@@ -7224,10 +7222,10 @@ describe('cbusMessage tests', function(){
             decToHex(value.SPCMD, 2) + 
             decToHex(value.CPDTL, 2) + 
             decToHex(value.CPDTH, 2) + ";";
-        var encode = cbusLib.encode_EXT_PUT_CONTROL(value.address, value.CTLBT, value.SPCMD, value.CPDTL, value.CPDTH);
+        var encode = vlcb2mgc.encode_EXT_PUT_CONTROL(value.address, value.CTLBT, value.SPCMD, value.CPDTL, value.CPDTH);
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: encode ' + encode});
-        var decode = cbusLib.decode(encode);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: decode ' + decode.text});
 		expect(decode.encoded).to.equal(expected, 'encoded');
 		expect(decode.ID_TYPE).to.equal('X', 'ID_TYPE');
@@ -7242,7 +7240,7 @@ describe('cbusMessage tests', function(){
         expect(decode.text).to.include('PUT', 'text operation');
         expect(decode.text).to.include('CONTROL', 'text type');
         // ok - try encoding the decode, to see if we still get the expected encode
-        var encode2 = cbusLib.encode(decode);
+        var encode2 = vlcb2mgc.encode(decode);
 		winston.info({message: 'cbusMessage test: encode2 ' + JSON.stringify(encode2)});
 		expect(encode2.encoded).to.equal(expected, 'encoded');
     })
@@ -7318,10 +7316,10 @@ describe('cbusMessage tests', function(){
             decToHex(value.data6, 2) + 
             decToHex(value.data7, 2) + ";";
         var testData = [value.data0, value.data1, value.data2, value.data3, value.data4, value.data5, value.data6, value.data7]
-        var encode = cbusLib.encode_EXT_PUT_DATA(testData);
+        var encode = vlcb2mgc.encode_EXT_PUT_DATA(testData);
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: encode ' + encode});
-        var decode = cbusLib.decode(encode);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: decode ' + decode.text});
 		expect(decode.encoded).to.equal(expected, 'encoded');
 		expect(decode.ID_TYPE).to.equal('X', 'ID_TYPE');
@@ -7330,7 +7328,7 @@ describe('cbusMessage tests', function(){
         expect(decode.text).to.include('PUT', 'text operation');
         expect(decode.text).to.include('DATA', 'text type');
         // ok - try encoding the decode, to see if we still get the expected encode
-        var encode2 = cbusLib.encode(decode);
+        var encode2 = vlcb2mgc.encode(decode);
 		winston.info({message: 'cbusMessage test: encode2 ' + JSON.stringify(encode2)});
 		expect(encode2.encoded).to.equal(expected, 'encoded');
     })
@@ -7355,17 +7353,17 @@ describe('cbusMessage tests', function(){
 	itParam("EXT_RESPONSE test response ${value.response}", GetTestCase_EXT_RESPONSE(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN EXT_RESPONSE test ' + JSON.stringify(value)});
 		expected = ":X80080004N" + decToHex(value.response, 2) + ";";
-        var encode = cbusLib.encode_EXT_RESPONSE(value.response);
+        var encode = vlcb2mgc.encode_EXT_RESPONSE(value.response);
 		expect(encode).to.equal(expected, 'encode');
 		winston.info({message: 'cbusMessage test: encode ' + encode});
-        var decode = cbusLib.decode(encode);
+        var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: decode ' + decode.text});
 		expect(decode.encoded).to.equal(expected, 'encoded');
 		expect(decode.ID_TYPE).to.equal('X', 'ID_TYPE');
 		expect(decode.operation).to.equal('RESPONSE', 'operation');
 		expect(decode.response).to.equal(value.response, 'response');
         // ok - try encoding the decode, to see if we still get the expected encode
-        var encode2 = cbusLib.encode(decode);
+        var encode2 = vlcb2mgc.encode(decode);
 		winston.info({message: 'cbusMessage test: encode2 ' + JSON.stringify(encode2)});
 		expect(encode2.encoded).to.equal(expected, 'encoded');
     })
@@ -7394,7 +7392,7 @@ describe('cbusMessage tests', function(){
 
  	itParam("undecoded message ${value.message}", GetTestCase_undecoded(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN undecoded message test ' + JSON.stringify(value)});
-    var decode = cbusLib.decode(value.message);
+    var decode = vlcb2mgc.decode(value.message);
 		winston.info({message: 'cbusMessage test: undecoded message decode ' + JSON.stringify(decode)});
 		expect(decode.text).to.equal(value.expected, 'decode');
 	})
