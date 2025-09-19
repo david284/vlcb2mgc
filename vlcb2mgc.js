@@ -4128,19 +4128,20 @@ class cbusLibrary {
 
 
     // B2 REQEV
-	// REQEV Format: [<MjPri><MinPri=3><CANID>]<B2><NN hi><NN lo><EN hi><EN lo><EV# >
+	  // REQEV Format: [<MjPri><MinPri=3><CANID>]<B2><NN hi><NN lo><EN hi><EN lo><EV# >
     //
     decodeREQEV(message) {
-		return {'encoded': message,
-                'ID_TYPE': 'S',
-                'mnemonic': 'REQEV',
-                'opCode': message.substr(7, 2),
-                'eventIdentifier': message.substr(9, 8),
-                'eventVariableIndex': parseInt(message.substr(17, 2), 16),
-                'text': "REQEV (B2) nodeNumber " + parseInt(message.substr(9, 4), 16) +
-					" eventNumber " + parseInt(message.substr(13, 4), 16) +
-					" eventVariableIndex " + parseInt(message.substr(17, 2), 16)
-        }
+		return {
+      'encoded': message,
+      'ID_TYPE': 'S',
+      'mnemonic': 'REQEV',
+      'opCode': message.substr(7, 2),
+      'eventIdentifier': message.substr(9, 8),
+      'eventVariableIndex': parseInt(message.substr(17, 2), 16),
+      "text": `REQEV (B2) eventIdentifer ${message.substr(9, 8)} NN:${parseInt(message.substr(9, 4), 16)}` 
+        + ` EN:${parseInt(message.substr(13, 4), 16)}`
+        + ` eventVariableIndex ${parseInt(message.substr(17, 2), 16)}`
+      }
     }
     /**
     * @desc opCode B2<br>
