@@ -4189,8 +4189,7 @@ describe('cbusMessage tests', function(){
 
   // B2 REQEV
   //
-	itParam("REQEV test eventIdentifier ${value.eventIdentifier} eventVariableIndex ${value.eventVariableIndex}", 
-    GetTestCase_REQEV(), function (value) {
+	itParam("REQEV test ${JSON.stringify(value)}", GetTestCase_REQEV(), function (value) {
     winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
     expected = ":SBF60N" + value.opCode + value.eventIdentifier + decToHex(value.eventVariableIndex, 2) + ";";
     var encode = vlcb2mgc.encodeREQEV(value.eventIdentifier, value.eventVariableIndex);
@@ -5131,9 +5130,9 @@ describe('cbusMessage tests', function(){
 			if (a1 == 2) arg1 = "00000001";
 			if (a1 == 3) arg1 = "FFFFFFFF";
       for (a3 = 1; a3 < 4; a3++) {
-        if (a3 == 1) arg3 = 0;
-        if (a3 == 2) arg3 = 1;
-        if (a3 == 3) arg3 = 255;
+        if (a3 == 1) arg2 = 0;
+        if (a3 == 2) arg2 = 1;
+        if (a3 == 3) arg2 = 255;
         for (a4 = 1; a4 < 4; a4++) {
           if (a4 == 1) arg4 = 0;
           if (a4 == 2) arg4 = 1;
@@ -5141,7 +5140,7 @@ describe('cbusMessage tests', function(){
           testCases.push({'mnemonic':'EVANS', 
                           'opCode':'D3', 
                           'eventIdentifier':arg1, 
-                          'eventVariableIndex':arg3,
+                          'eventVariableIndex':arg2,
                           'eventVariableValue':arg4,
           })
         }                        
@@ -5152,25 +5151,23 @@ describe('cbusMessage tests', function(){
 
   // D3 EVANS
   //
-  //itParam("EVANS test eventIdentifier ${value.eventIdentifier} eventNumber ${value.eventNumber} eventVariableIndex ${value.eventVariableIndex} eventVariableValue ${value.eventVariableValue}", 
-	itParam("EVANS test eventIdentifier ${JSON.stringify(value)} eventNumber ${value.eventNumber} eventVariableIndex ${value.eventVariableIndex} eventVariableValue ${value.eventVariableValue}", 
-        GetTestCase_EVANS(), function (value) {
-            winston.info({message: 'cbusMessage test: BEGIN ' + value.mnemonic +' test ' + JSON.stringify(value)});
-            expected = ":SBF60N" + value.opCode + value.eventIdentifier + decToHex(value.eventVariableIndex, 2) + decToHex(value.eventVariableValue, 2) + ";";
-            var encode = vlcb2mgc.encodeEVANS(value.eventIdentifier, value.eventVariableIndex, value.eventVariableValue);
-            var decode = vlcb2mgc.decode(encode);
-            winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
-            expect(encode).to.equal(expected, 'encode');
-            winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
-            expect(decode.encoded).to.equal(expected, 'encoded');
-            expect(decode.ID_TYPE).to.equal('S', 'ID_TYPE');
-            expect(decode.mnemonic).to.equal(value.mnemonic, 'mnemonic');
-            expect(decode.opCode).to.equal(value.opCode, 'opCode');
-            expect(decode.text).to.include(value.mnemonic + ' ', 'text mnemonic');
-            expect(decode.text).to.include('(' + value.opCode + ')', 'text opCode');
-            expect(decode.eventIdentifier).to.equal(value.eventIdentifier, 'eventIdentifier');
-            expect(decode.eventVariableIndex).to.equal(value.eventVariableIndex, 'eventVariableIndex');
-            expect(decode.eventVariableValue).to.equal(value.eventVariableValue, 'eventVariableValue');
+	itParam("EVANS test ${JSON.stringify(value)}", GetTestCase_EVANS(), function (value) {
+    winston.info({message: 'cbusMessage test: BEGIN ' + value.mnemonic +' test ' + JSON.stringify(value)});
+    expected = ":SBF60N" + value.opCode + value.eventIdentifier + decToHex(value.eventVariableIndex, 2) + decToHex(value.eventVariableValue, 2) + ";";
+    var encode = vlcb2mgc.encodeEVANS(value.eventIdentifier, value.eventVariableIndex, value.eventVariableValue);
+    var decode = vlcb2mgc.decode(encode);
+    winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
+    expect(encode).to.equal(expected, 'encode');
+    winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
+    expect(decode.encoded).to.equal(expected, 'encoded');
+    expect(decode.ID_TYPE).to.equal('S', 'ID_TYPE');
+    expect(decode.mnemonic).to.equal(value.mnemonic, 'mnemonic');
+    expect(decode.opCode).to.equal(value.opCode, 'opCode');
+    expect(decode.text).to.include(value.mnemonic + ' ', 'text mnemonic');
+    expect(decode.text).to.include('(' + value.opCode + ')', 'text opCode');
+    expect(decode.eventIdentifier).to.equal(value.eventIdentifier, 'eventIdentifier');
+    expect(decode.eventVariableIndex).to.equal(value.eventVariableIndex, 'eventVariableIndex');
+    expect(decode.eventVariableValue).to.equal(value.eventVariableValue, 'eventVariableValue');
 	})
 
 
