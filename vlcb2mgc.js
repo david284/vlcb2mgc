@@ -1321,11 +1321,10 @@ class cbusLibrary {
                 message.encoded = this.encodeACOF2(message.nodeNumber, message.eventNumber, message.data1, message.data2);
                 break;
             case 'EVLRN':   // D2
-                if(!message.hasOwnProperty('nodeNumber')) {throw Error("encode: property 'nodeNumber' missing")};
-                if(!message.hasOwnProperty('eventNumber')) {throw Error("encode: property 'eventNumber' missing")};
+                if(!message.hasOwnProperty('eventIdentifier')) {throw Error("encode: property 'eventIdentifier' missing")};
                 if(!message.hasOwnProperty('eventVariableIndex')) {throw Error("encode: property 'eventVariableIndex' missing")};
                 if(!message.hasOwnProperty('eventVariableValue')) {throw Error("encode: property 'eventVariableValue' missing")};
-                message.encoded = this.encodeEVLRN(message.nodeNumber, message.eventNumber, message.eventVariableIndex, message.eventVariableValue);
+                message.encoded = this.encodeEVLRN(message.eventIdentifier, message.eventVariableIndex, message.eventVariableValue);
                 break;
             case 'EVANS':   // D3
                 if(!message.hasOwnProperty('eventIdentifier')) {throw Error("encode: property 'eventIdentifier' missing")};
@@ -4723,32 +4722,32 @@ class cbusLibrary {
 	// EVLRN Format: [<MjPri><MinPri=3><CANID>]<D2><NN hi><NN lo><EN hi><EN lo><EV#><EV val>
     //
     decodeEVLRN(message) {
-        return {'encoded': message,
-                'ID_TYPE': 'S',
-                'mnemonic': 'EVLRN',
-                'opCode': message.substr(7, 2),
-                'nodeNumber': parseInt(message.substr(9, 4), 16),
-                'eventNumber': parseInt(message.substr(13, 4), 16),
-                'eventIdentifier': message.substr(9, 8),
-                'eventVariableIndex': parseInt(message.substr(17, 2), 16),
-                'eventVariableValue': parseInt(message.substr(19, 2), 16),
-                'text': "EVLRN (D2) nodeNumber " + parseInt(message.substr(9, 4), 16) + 
-                    " eventNumber " + parseInt(message.substr(13, 4), 16) +
-					" Event Variable Index " + parseInt(message.substr(17, 2), 16) + 
-					" Event Variable Value " + parseInt(message.substr(19, 2), 16)
-        }
+      return {'encoded': message,
+        'ID_TYPE': 'S',
+        'mnemonic': 'EVLRN',
+        'opCode': message.substr(7, 2),
+        'eventIdentifier': message.substr(9, 8),
+        'eventVariableIndex': parseInt(message.substr(17, 2), 16),
+        'eventVariableValue': parseInt(message.substr(19, 2), 16),
+        "text": `EVLRN (D2) eventIdentifer:${message.substr(9, 8)}`
+        + ` NN:${parseInt(message.substr(9, 4), 16)}` 
+        + ` EN:${parseInt(message.substr(13, 4), 16)}`
+        + ` Event Variable Index:${parseInt(message.substr(17, 2), 16)}`
+        + ` Event Variable Value:${parseInt(message.substr(19, 2), 16)}`
+      }
     }
     /**
     * @desc opCode D2<br>
-    * @param {int} nodeNumber 0 to 65535
-    * @param {int} eventNumber 0 to 65535
+    * @param {string} eventIdentifer "00000000" to "FFFFFFFF"
     * @param {int} eventVariableIndex 0 to 255
     * @param {int} eventVariableValue 0 to 255
     * @return {String} CBUS message encoded as a 'Grid Connect' ASCII string<br>
     * Format: [&ltMjPri&gt&ltMinPri=3&gt&ltCANID&gt]&ltD2&gt&ltnodeNumber hi&gt&ltnodeNumber lo&gt&lteventNumber hi&gt&lteventNumber lo&gt&lteventVariableIndex&gt&lteventVariableValue&gt
     */
-    encodeEVLRN(nodeNumber, eventNumber, eventVariableIndex, eventVariableValue) {
-        return this.header({MinPri: 3}) + 'D2' + decToHex(nodeNumber, 4) + decToHex(eventNumber, 4) + decToHex(eventVariableIndex, 2) + decToHex(eventVariableValue, 2) + ';'
+    encodeEVLRN(eventIdentifier, eventVariableIndex, eventVariableValue) {
+      // process eventIdentifier - remove spaces, limit to 8 chars, and pad with 0's if less than eight
+      var processedEventIdentifier = eventIdentifier.trim().substring(0, 8).padStart(8, '0')
+      return this.header({MinPri: 3}) + 'D2' + processedEventIdentifier + decToHex(eventVariableIndex, 2) + decToHex(eventVariableValue, 2) + ';'
     }
     
 
