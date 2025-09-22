@@ -3,7 +3,5 @@
   Changed REQEV & EVANS to only use eventIdentity
   REVAL/NEVAL use node number and event index, so not changed
   Changed EVLRN to only use eventIdentity
+  Changed EVLRNI to only use eventIdentity
 
-  todo:
-  
-  EVLRNI

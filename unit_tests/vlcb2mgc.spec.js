@@ -255,7 +255,7 @@ describe('cbusMessage tests', function(){
 		testCases.push({'test':{'mnemonic': 'ENRSP', 'nodeNumber': '1', 'eventIdentifier':'00000002', 'eventIndex':'3'}, 'expected': ':SBF60NF200010000000203;'});
 		testCases.push({'test':{'mnemonic': 'ARON3', 'nodeNumber': '1', 'eventNumber':'2', 'data1':'3', 'data2':'4', 'data3':'5'}, 'expected': ':SBF60NF300010002030405;'});
 		testCases.push({'test':{'mnemonic': 'AROF3', 'nodeNumber': '1', 'eventNumber':'2', 'data1':'3', 'data2':'4', 'data3':'5'}, 'expected': ':SBF60NF400010002030405;'});
-		testCases.push({'test':{'mnemonic': 'EVLRNI', 'nodeNumber':'1', 'eventNumber':'2', 'eventNumberIndex':'3', 'eventVariableIndex':'4', 'eventVariableValue':'5'}, 'expected': ':SBF60NF500010002030405;'});
+		testCases.push({'test':{'mnemonic': 'EVLRNI', 'eventIdentifier':"00000001", 'eventNumberIndex':'3', 'eventVariableIndex':'4', 'eventVariableValue':'5'}, 'expected': ':SBF60NF500000001030405;'});
 		testCases.push({'test':{'mnemonic': 'ACDAT', 'nodeNumber': '1', 'data1':'2', 'data2':'3', 'data3':'4', 'data4':'5', 'data5':'6'}, 'expected': ':SBF60NF600010203040506;'});
 		testCases.push({'test':{'mnemonic': 'ARDAT', 'nodeNumber': '1', 'data1':'2', 'data2':'3', 'data3':'4', 'data4':'5', 'data5':'6'}, 'expected': ':SBF60NF700010203040506;'});
 		testCases.push({'test':{'mnemonic': 'ASON3', 'nodeNumber': '1', 'deviceNumber':'2', 'data1':'3', 'data2':'4', 'data3':'5'}, 'expected': ':SBF60NF800010002030405;'});
@@ -642,11 +642,10 @@ describe('cbusMessage tests', function(){
 		testCases.push({'test':{'mnemonic': 'AROF3', 'nodeNumber':'2', 'eventNumber':'2', 'data2':'4', 'data3':'5'}, 'expected': 'encode: property \'data1\' missing'});
 		testCases.push({'test':{'mnemonic': 'AROF3', 'nodeNumber':'2', 'eventNumber':'2', 'data1':'3', 'data3':'5'}, 'expected': 'encode: property \'data2\' missing'});
 		testCases.push({'test':{'mnemonic': 'AROF3', 'nodeNumber':'2', 'eventNumber':'2', 'data1':'3', 'data2':'4'}, 'expected': 'encode: property \'data3\' missing'});
-		testCases.push({'test':{'mnemonic': 'EVLRNI', 'eventNumber': '2', 'eventNumberIndex':'3', 'eventVariableIndex':'4', 'eventVariableValue':'5'}, 'expected': 'encode: property \'nodeNumber\' missing'});
-		testCases.push({'test':{'mnemonic': 'EVLRNI', 'nodeNumber': '1', 'eventNumberIndex':'3', 'eventVariableIndex':'4', 'eventVariableValue':'5'}, 'expected': 'encode: property \'eventNumber\' missing'});
-		testCases.push({'test':{'mnemonic': 'EVLRNI', 'nodeNumber': '1', 'eventNumber': '2', 'eventVariableIndex':'4', 'eventVariableValue':'5'}, 'expected': 'encode: property \'eventNumberIndex\' missing'});
-		testCases.push({'test':{'mnemonic': 'EVLRNI', 'nodeNumber': '1', 'eventNumber': '2', 'eventNumberIndex':'3', 'eventVariableValue':'5'}, 'expected': 'encode: property \'eventVariableIndex\' missing'});
-		testCases.push({'test':{'mnemonic': 'EVLRNI', 'nodeNumber': '1', 'eventNumber': '2', 'eventNumberIndex':'3', 'eventVariableIndex':'4'}, 'expected': 'encode: property \'eventVariableValue\' missing'});
+		testCases.push({'test':{'mnemonic': 'EVLRNI', 'eventNumberIndex':'3', 'eventVariableIndex':'4', 'eventVariableValue':'5'}, 'expected': 'encode: property \'eventIdentifier\' missing'});
+		testCases.push({'test':{'mnemonic': 'EVLRNI', 'eventIdentifier': "00000001", 'eventVariableIndex':'4', 'eventVariableValue':'5'}, 'expected': 'encode: property \'eventNumberIndex\' missing'});
+		testCases.push({'test':{'mnemonic': 'EVLRNI', 'eventIdentifier': "00000001", 'eventNumberIndex':'3', 'eventVariableValue':'5'}, 'expected': 'encode: property \'eventVariableIndex\' missing'});
+		testCases.push({'test':{'mnemonic': 'EVLRNI', 'eventIdentifier': "00000001", 'eventNumberIndex':'3', 'eventVariableIndex':'4'}, 'expected': 'encode: property \'eventVariableValue\' missing'});
 		testCases.push({'test':{'mnemonic': 'ACDAT', 'data1':'2', 'data2':'3', 'data3':'4', 'data4':'5', 'data5':'6'}, 'expected': 'encode: property \'nodeNumber\' missing'});
 		testCases.push({'test':{'mnemonic': 'ACDAT', 'nodeNumber':'1','data2':'3', 'data3':'4', 'data4':'5', 'data5':'6'}, 'expected': 'encode: property \'data1\' missing'});
 		testCases.push({'test':{'mnemonic': 'ACDAT', 'nodeNumber':'1','data1':'2', 'data3':'4', 'data4':'5', 'data5':'6'}, 'expected': 'encode: property \'data2\' missing'});
@@ -5092,7 +5091,7 @@ describe('cbusMessage tests', function(){
 
     // D2 EVLRN
     //
-	itParam("EVLRN test eventVariableIndex ${value.eventVariableIndex} eventVariableValue ${value.eventVariableValue}", GetTestCase_EVLRN(), function (value) {
+	itParam("EVLRN test ${JSON.stringify(value)}", GetTestCase_EVLRN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN EVLRN test ' + JSON.stringify(value)});
 		expected = ":SBF60N" + value.opCode + value.eventIdentifier + decToHex(value.eventVariableIndex, 2) + decToHex(value.eventVariableValue, 2) + ";";
     var encode = vlcb2mgc.encodeEVLRN(value.eventIdentifier, value.eventVariableIndex, value.eventVariableValue);
@@ -6426,63 +6425,55 @@ describe('cbusMessage tests', function(){
 	function GetTestCase_EVLRNI () {
 		var testCases = [];
 		for (a1 = 1; a1 < 4; a1++) {
-			if (a1 == 1) arg1 = 0;
-			if (a1 == 2) arg1 = 1;
-			if (a1 == 3) arg1 = 65535;
-                for (a2 = 1; a2 < 4; a2++) {
-                    if (a2 == 1) arg2 = 0;
-                    if (a2 == 2) arg2 = 1;
-                    if (a2 == 3) arg2 = 65535;
-                    for (a3 = 1; a3 < 4; a3++) {
-                        if (a3 == 1) arg3 = 0;
-                        if (a3 == 2) arg3 = 1;
-                        if (a3 == 3) arg3 = 255;
-                        for (a4 = 1; a4 < 4; a4++) {
-                            if (a4 == 1) arg4 = 0;
-                            if (a4 == 2) arg4 = 1;
-                            if (a4 == 3) arg4 = 255;
-                            for (a5 = 1; a5 < 4; a5++) {
-                                if (a5 == 1) arg5 = 0;
-                                if (a5 == 2) arg5 = 1;
-                                if (a5 == 3) arg5 = 255;
-                                testCases.push({'mnemonic':'EVLRNI', 
-                                                'opCode':'F5', 
-                                                'nodeNumber':arg1, 
-                                                'eventNumber':arg2, 
-                                                'eventNumberIndex':arg3, 
-                                                'eventVariableIndex':arg4, 
-                                                'eventVariableValue':arg5});
-                            }
-                        }
-                    }
-                }
+			if (a1 == 1) arg1 = "00000000";
+			if (a1 == 2) arg1 = "00000001";
+			if (a1 == 3) arg1 = "FFFFFFFF";
+      for (a3 = 1; a3 < 4; a3++) {
+        if (a3 == 1) arg3 = 0;
+        if (a3 == 2) arg3 = 1;
+        if (a3 == 3) arg3 = 255;
+        for (a4 = 1; a4 < 4; a4++) {
+          if (a4 == 1) arg4 = 0;
+          if (a4 == 2) arg4 = 1;
+          if (a4 == 3) arg4 = 255;
+          for (a5 = 1; a5 < 4; a5++) {
+            if (a5 == 1) arg5 = 0;
+            if (a5 == 2) arg5 = 1;
+            if (a5 == 3) arg5 = 255;
+            testCases.push({'mnemonic':'EVLRNI', 
+              'opCode':'F5', 
+              'eventIdentifier':arg1, 
+              'eventNumberIndex':arg3, 
+              'eventVariableIndex':arg4, 
+              'eventVariableValue':arg5});
+          }
+        }
+      }
 		}
 		return testCases;
 	}
 
-    // F5 EVLRNI
+  // F5 EVLRNI
+  //
+	itParam("EVLRNI test ${JSON.stringify(value)}", GetTestCase_EVLRNI(), function (value) {
+    winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
+    expected = ":SBF60N" + value.opCode + value.eventIdentifier + decToHex(value.eventNumberIndex, 2) + decToHex(value.eventVariableIndex, 2) + decToHex(value.eventVariableValue, 2) + ";";
+    var encode = vlcb2mgc.encodeEVLRNI(value.eventIdentifier, value.eventNumberIndex, value.eventVariableIndex, value.eventVariableValue);
+    winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
+    var decode = vlcb2mgc.decode(encode);
+    winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
     //
-	itParam("EVLRNI test nodeNumber ${value.nodeNumber} eventNumber ${value.eventNumber} eventNumberIndex ${value.eventNumberIndex} eventVariableIndex ${value.eventVariableIndex} eventVariableValue ${value.eventVariableValue}", 
-        GetTestCase_EVLRNI(), function (value) {
-            winston.info({message: 'cbusMessage test: BEGIN '  + value.mnemonic +' test ' + JSON.stringify(value)});
-            expected = ":SBF60N" + value.opCode + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + decToHex(value.eventNumberIndex, 2) + decToHex(value.eventVariableIndex, 2) + decToHex(value.eventVariableValue, 2) + ";";
-            var encode = vlcb2mgc.encodeEVLRNI(value.nodeNumber, value.eventNumber, value.eventNumberIndex, value.eventVariableIndex, value.eventVariableValue);
-            winston.info({message: 'cbusMessage test: ' + value.mnemonic +' encode ' + encode});
-            expect(encode).to.equal(expected, 'encode');
-            var decode = vlcb2mgc.decode(encode);
-            winston.info({message: 'cbusMessage test: ' + value.mnemonic +' decode ' + JSON.stringify(decode)});
-            expect(decode.encoded).to.equal(expected, 'encoded');
-            expect(decode.ID_TYPE).to.equal('S', 'ID_TYPE');
-            expect(decode.mnemonic).to.equal(value.mnemonic, 'mnemonic');
-            expect(decode.opCode).to.equal(value.opCode, 'opCode');
-            expect(decode.nodeNumber).to.equal(value.nodeNumber, 'nodeNumber');
-            expect(decode.eventNumber).to.equal(value.eventNumber, 'eventNumber');
-            expect(decode.eventIdentifier).to.equal(expected.substr(9, 8), 'eventIdentifier');
-            expect(decode.eventNumberIndex).to.equal(value.eventNumberIndex, 'eventNumberIndex');
-            expect(decode.eventVariableIndex).to.equal(value.eventVariableIndex, 'eventVariableIndex');
-            expect(decode.eventVariableValue).to.equal(value.eventVariableValue, 'eventVariableValue');
-            expect(decode.text).to.include(value.mnemonic + ' ', 'text mnemonic');
-            expect(decode.text).to.include('(' + value.opCode + ')', 'text opCode');
+    expect(encode).to.equal(expected, 'encode');
+    expect(decode.encoded).to.equal(expected, 'encoded');
+    expect(decode.ID_TYPE).to.equal('S', 'ID_TYPE');
+    expect(decode.mnemonic).to.equal(value.mnemonic, 'mnemonic');
+    expect(decode.opCode).to.equal(value.opCode, 'opCode');
+    expect(decode.eventIdentifier).to.equal(value.eventIdentifier, 'eventIdentifier');
+    expect(decode.eventNumberIndex).to.equal(value.eventNumberIndex, 'eventNumberIndex');
+    expect(decode.eventVariableIndex).to.equal(value.eventVariableIndex, 'eventVariableIndex');
+    expect(decode.eventVariableValue).to.equal(value.eventVariableValue, 'eventVariableValue');
+    expect(decode.text).to.include(value.mnemonic + ' ', 'text mnemonic');
+    expect(decode.text).to.include('(' + value.opCode + ')', 'text opCode');
 	})
 
 
