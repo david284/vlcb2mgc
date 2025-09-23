@@ -45,7 +45,7 @@ function hexToString(hex) {
 
 /**
 */
-class cbusLibrary {
+class vlcb2mgc {
     constructor() {
         this.canHeader = {
                     'MjPri': 2,     // lowest allowed priority (highest value)
@@ -6014,7 +6014,7 @@ class cbusLibrary {
 
 }
 
-module.exports = new cbusLibrary();
+module.exports = new vlcb2mgc();
 
 
 
