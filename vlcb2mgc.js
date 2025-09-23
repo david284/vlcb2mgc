@@ -1620,11 +1620,11 @@ class cbusLibrary {
                             message.encoded = this.encode_EXT_PUT_DATA(message.data);
                         }
                         else {
-                            throw Error('encode extended: type \'' + message.type + '\' not supported');
+                            throw Error("encode extended: type ' + message.type + ' not supported");
                         }
                             
                     } else {
-                        throw Error("encode extended: property \'type\' missing");
+                        throw Error("encode extended: property 'type' missing");
                     }
                     break;
                 case 'GET':
@@ -1634,7 +1634,7 @@ class cbusLibrary {
                     message.encoded = this.encode_EXT_RESPONSE(message.response);
                     break;
                 default:
-                     throw Error('encode extended: \'' + message.operation + '\' not supported');
+                     throw Error("encode extended: '" + message.operation + "' not supported");
                    break;
             }
             return message;
