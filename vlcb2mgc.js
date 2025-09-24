@@ -1094,9 +1094,8 @@ class vlcb2mgc {
                 message.encoded = this.encodeAROF(message.nodeNumber, message.eventNumber);
                 break;
             case 'EVULN':   // 95
-                if(!message.hasOwnProperty('nodeNumber')) {throw Error("encode: property 'nodeNumber' missing")};
-                if(!message.hasOwnProperty('eventNumber')) {throw Error("encode: property 'eventNumber' missing")};
-                message.encoded = this.encodeEVULN(message.nodeNumber, message.eventNumber);
+                if(!message.hasOwnProperty('eventIdentifier')) {throw Error("encode: property 'eventIdentifier' missing")};
+                message.encoded = this.encodeEVULN(message.eventIdentifier);
                 break;
             case 'NVSET':   // 96
                 if(!message.hasOwnProperty('nodeNumber')) {throw Error("encode: property 'nodeNumber' missing")};
@@ -3572,29 +3571,29 @@ class vlcb2mgc {
 
 
     // 95 EVULN
-	// EVULN Format: [<MjPri><MinPri=3><CANID>]<95><NN hi><NN lo><EN hi><EN lo>
+	  // EVULN Format: [<MjPri><MinPri=3><CANID>]<95><NN hi><NN lo><EN hi><EN lo>
     //
     decodeEVULN(message) {
         return {'encoded': message,
                 'ID_TYPE': 'S',
                 'mnemonic': 'EVULN',
                 'opCode': message.substr(7, 2),
-                'nodeNumber': parseInt(message.substr(9, 4), 16), 
-                'eventNumber': parseInt(message.substr(13, 4), 16), 
                 'eventIdentifier': message.substr(9, 8),
-                'text': "EVULN (95) nodeNumber " + parseInt(message.substr(9, 4), 16) +
-                    " eventNumber " + parseInt(message.substr(13, 4), 16)
+                "text": `EVULN (95) eventIdentifier:${message.substr(9, 8)}`
+                + ` NN:${parseInt(message.substr(9, 4), 16)}`
+                + ` EN:${parseInt(message.substr(13, 4), 16)}`
         }
     }
     /**
     * @desc opCode 95<br>
-    * @param {int} nodeNumber 0 to 65535
-    * @param {int} eventNumber 0 to 65535
+    * @param {string} eventIdentifer "00000000" to "FFFFFFFF"
     * @return {String} CBUS message encoded as a 'Grid Connect' ASCII string<br>
     * Format: [&ltMjPri&gt&ltMinPri=3&gt&ltCANID&gt]&lt95&gt&ltnodeNumber hi&gt&ltnodeNumber lo&gt&lteventNumber hi&gt&lteventNumber lo&gt
     */
-    encodeEVULN(nodeNumber, eventNumber) {
-        return this.header({MinPri: 3}) + '95' + decToHex(nodeNumber, 4) + decToHex(eventNumber, 4) + ';'
+    encodeEVULN(eventIdentifier) {
+      // process eventIdentifier - remove spaces, limit to 8 chars, and pad with 0's if less than eight
+      var processedEventIdentifier = eventIdentifier.trim().substring(0, 8).padStart(8, '0')
+      return this.header({MinPri: 3}) + '95' + processedEventIdentifier + ';'
     }
 
 

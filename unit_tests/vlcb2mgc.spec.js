@@ -197,7 +197,7 @@ describe('cbusMessage tests', function(){
 		testCases.push({'test':{'mnemonic': 'AREQ', 'nodeNumber': '1', 'eventNumber':'2'}, 'expected': ':SBF60N9200010002;'});
 		testCases.push({'test':{'mnemonic': 'ARON', 'nodeNumber': '1', 'eventNumber':'2'}, 'expected': ':SBF60N9300010002;'});
 		testCases.push({'test':{'mnemonic': 'AROF', 'nodeNumber': '1', 'eventNumber':'2'}, 'expected': ':SBF60N9400010002;'});
-		testCases.push({'test':{'mnemonic': 'EVULN', 'nodeNumber': '1', 'eventNumber':'2'}, 'expected': ':SBF60N9500010002;'});
+		testCases.push({'test':{'mnemonic': 'EVULN', 'eventIdentifier':'00000001'}, 'expected': ':SBF60N9500000001;'});
 		testCases.push({'test':{'mnemonic': 'NVSET', 'nodeNumber': '1', 'nodeVariableIndex':'2', 'nodeVariableValue':'3'}, 'expected': ':SBF60N9600010203;'});
 		testCases.push({'test':{'mnemonic': 'NVANS', 'nodeNumber': '1', 'nodeVariableIndex':'2', 'nodeVariableValue':'3'}, 'expected': ':SBF60N9700010203;'});
 		testCases.push({'test':{'mnemonic': 'ASON', 'nodeNumber': '1', 'deviceNumber':'2'}, 'expected': ':SBF60N9800010002;'});
@@ -414,8 +414,7 @@ describe('cbusMessage tests', function(){
 		testCases.push({'test':{'mnemonic': 'ARON', 'nodeNumber':'2'}, 'expected': "Error: encode: property 'eventNumber' missing"});
 		testCases.push({'test':{'mnemonic': 'AROF', 'eventNumber': '3'}, 'expected': "Error: encode: property 'nodeNumber' missing"});
 		testCases.push({'test':{'mnemonic': 'AROF', 'nodeNumber':'2'}, 'expected': "Error: encode: property 'eventNumber' missing"});
-		testCases.push({'test':{'mnemonic': 'EVULN', 'eventNumber': '3'}, 'expected': "Error: encode: property 'nodeNumber' missing"});
-		testCases.push({'test':{'mnemonic': 'EVULN', 'nodeNumber':'2'}, 'expected': "Error: encode: property 'eventNumber' missing"});
+		testCases.push({'test':{'mnemonic': 'EVULN'}, 'expected': "Error: encode: property 'eventIdentifier' missing"});
 		testCases.push({'test':{'mnemonic': 'NVSET', 'nodeVariableIndex':'2', 'nodeVariableValue':'3'}, 'expected': "Error: encode: property 'nodeNumber' missing"});
 		testCases.push({'test':{'mnemonic': 'NVSET', 'nodeNumber':'2', 'nodeVariableValue':'3'}, 'expected': "Error: encode: property 'nodeVariableIndex' missing"});
 		testCases.push({'test':{'mnemonic': 'NVSET', 'nodeNumber':'2', 'nodeVariableIndex':'3'}, 'expected': "Error: encode: property 'nodeVariableValue' missing"});
@@ -3341,27 +3340,22 @@ describe('cbusMessage tests', function(){
 	function GetTestCase_EVULN () {
 		var testCases = [];
 		for (a1 = 1; a1 < 4; a1++) {
-			if (a1 == 1) arg1 = 0;
-			if (a1 == 2) arg1 = 1;
-			if (a1 == 3) arg1 = 65535;
-            for (a2 = 1; a2 < 4; a2++) {
-                if (a2 == 1) arg2 = 0;
-                if (a2 == 2) arg2 = 1;
-                if (a2 == 3) arg2 = 65535;
-                testCases.push({'mnemonic':'EVULN', 
-                                'opCode':'95', 
-                                'nodeNumber':arg1, 
-                                'eventNumber':arg2,
-                })                                
-            }
+			if (a1 == 1) arg1 = '00000000';
+			if (a1 == 2) arg1 = '00000001';
+			if (a1 == 3) arg1 = 'FFFFFFFF';
+      testCases.push({
+        'mnemonic':'EVULN', 
+        'opCode':'95', 
+        'eventIdentifier':arg1
+      })                                
 		}
 		return testCases;
 	}
 
-	itParam("EVULN test nodeNumber ${value.nodeNumber} eventNumber ${value.eventNumber}", GetTestCase_EVULN(), function (value) {
+	itParam("EVULN test ${JSON.stringify(value)}", GetTestCase_EVULN(), function (value) {
 		winston.info({message: 'cbusMessage test: BEGIN EVULN test ' + JSON.stringify(value)});
-		expected = ":SBF60N95" + decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4) + ";";
-        var encode = vlcb2mgc.encodeEVULN(value.nodeNumber, value.eventNumber);
+		expected = ":SBF60N95" + value.eventIdentifier + ";";
+        var encode = vlcb2mgc.encodeEVULN(value.eventIdentifier);
         var decode = vlcb2mgc.decode(encode);
 		winston.info({message: 'cbusMessage test: EVULN encode ' + encode});
 		expect(encode).to.equal(expected, 'encode');
@@ -3370,9 +3364,7 @@ describe('cbusMessage tests', function(){
 		expect(decode.ID_TYPE).to.equal('S', 'ID_TYPE');
 		expect(decode.mnemonic).to.equal('EVULN', 'mnemonic');
 		expect(decode.opCode).to.equal('95', 'opCode');
-        expect(decode.nodeNumber).to.equal(value.nodeNumber, 'nodeNumber');
-        expect(decode.eventNumber).to.equal(value.eventNumber, 'eventNumber');
-        expect(decode.eventIdentifier).to.equal(decToHex(value.nodeNumber, 4) + decToHex(value.eventNumber, 4), 'eventIdentifier');        
+        expect(decode.eventIdentifier).to.equal(value.eventIdentifier, 'eventIdentifier');        
         expect(decode.text).to.include(decode.mnemonic + ' ', 'text mnemonic');
         expect(decode.text).to.include('(' + decode.opCode + ')', 'text opCode');
 	})
